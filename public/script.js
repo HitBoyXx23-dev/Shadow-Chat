@@ -1,19 +1,20 @@
+// === Shadow Chat Global Client ===
 const socket = io();
 
-// --- Elements ---
+// --- DOM elements ---
 const usernameInput = document.getElementById("username");
 const pfpUrlInput = document.getElementById("pfpUrl");
 const saveBtn = document.getElementById("saveProfile");
 const pfpPreview = document.getElementById("pfpPreview");
 const status = document.getElementById("status");
+
 const chatLog = document.getElementById("chatLog");
 const messageInput = document.getElementById("message");
 const sendBtn = document.getElementById("sendBtn");
 
-// --- Tabs logic ---
+// --- Tabs (Profile / Chat) ---
 const tabs = document.querySelectorAll(".tab");
 const contents = document.querySelectorAll(".tab-content");
-
 tabs.forEach((tab) => {
   tab.addEventListener("click", () => {
     tabs.forEach((t) => t.classList.remove("active"));
@@ -23,7 +24,8 @@ tabs.forEach((tab) => {
   });
 });
 
-// --- Load saved profile ---
+// === PROFILE ===
+// Load saved profile
 window.addEventListener("DOMContentLoaded", () => {
   const savedName = localStorage.getItem("shadow_username");
   const savedPfp = localStorage.getItem("shadow_pfp");
@@ -33,7 +35,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (savedName) status.textContent = `🕶️ Welcome back, ${savedName}`;
 });
 
-// --- Save profile ---
+// Save profile button
 saveBtn.addEventListener("click", () => {
   const name = usernameInput.value.trim();
   const pfp = pfpUrlInput.value.trim() || "default_pfp.png";
@@ -44,24 +46,67 @@ saveBtn.addEventListener("click", () => {
   status.textContent = `✅ Profile saved as ${name}`;
 });
 
-// --- Send message ---
-sendBtn.addEventListener("click", () => {
+// === CHAT ===
+// Send message
+sendBtn.addEventListener("click", sendMessage);
+messageInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") sendMessage();
+});
+
+function sendMessage() {
   const name = localStorage.getItem("shadow_username") || "Anonymous";
   const pfp = localStorage.getItem("shadow_pfp") || "default_pfp.png";
   const text = messageInput.value.trim();
   if (!text) return;
-  socket.emit("chat message", { name, pfp, text });
+  const msg = { name, pfp, text, time: new Date().toLocaleTimeString() };
+  socket.emit("chat message", msg);
   messageInput.value = "";
+}
+
+// === RECEIVE ===
+// History from server
+socket.on("chat history", (history) => {
+  chatLog.innerHTML = "";
+  history.forEach(addMessageToLog);
+  localStorage.setItem("shadow_chat_history", JSON.stringify(history));
 });
 
-// --- Receive messages ---
+// New message live
 socket.on("chat message", (msg) => {
+  addMessageToLog(msg);
+  let chatHistory = JSON.parse(localStorage.getItem("shadow_chat_history") || "[]");
+  chatHistory.push(msg);
+  if (chatHistory.length > 200) chatHistory.shift();
+  localStorage.setItem("shadow_chat_history", JSON.stringify(chatHistory));
+});
+
+// === HELPERS ===
+function addMessageToLog(msg) {
   const div = document.createElement("div");
   div.classList.add("message");
   div.innerHTML = `
     <img src="${msg.pfp}" alt="pfp">
-    <strong>${msg.name}:</strong> <span>${msg.text}</span>
+    <div>
+      <strong>${msg.name}</strong>
+      <span style="font-size:0.7em;opacity:0.7;"> ${msg.time || ""}</span><br>
+      <span>${escapeHTML(msg.text)}</span>
+    </div>
   `;
   chatLog.appendChild(div);
   chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+// --- basic XSS-safe text escape ---
+function escapeHTML(str) {
+  return str.replace(/[&<>'"]/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c])
+  );
+}
+
+// --- Reload last local chat if offline ---
+window.addEventListener("load", () => {
+  const localChat = JSON.parse(localStorage.getItem("shadow_chat_history") || "[]");
+  if (localChat.length && chatLog.children.length === 0) {
+    localChat.forEach(addMessageToLog);
+  }
 });
