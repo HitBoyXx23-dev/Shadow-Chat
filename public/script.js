@@ -93,7 +93,7 @@ socket.on("userCount", (count) => {
   onlineCount.textContent = `🟢 Online Users: ${count}`;
 });
 
-// --- Render message ---
+// --- Helper to render message ---
 function addMessageToLog(msg) {
   const div = document.createElement("div");
   div.classList.add("message");
@@ -115,10 +115,11 @@ function escapeHTML(str) {
   );
 }
 
-// === PURPLE FIREWORK EFFECT ===
+// === FALLING PURPLE PARTICLES + ROCKET FIREWORK ===
 const canvas = document.getElementById('fireworkCanvas');
 const ctx = canvas.getContext('2d');
-let particles = [];
+let fireworks = [];
+let ambient = [];
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -127,42 +128,95 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-function createFirework(x, y) {
+function createAmbient() {
+  ambient = [];
+  for (let i = 0; i < 70; i++) {
+    ambient.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.5 + 0.5,
+      s: Math.random() * 0.5 + 0.2,
+      c: `rgba(${100 + Math.random()*100},0,${200 + Math.random()*55},${0.2 + Math.random()*0.5})`
+    });
+  }
+}
+createAmbient();
+
+function createRocket(x, y) {
+  fireworks.push({
+    x, y,
+    vy: -8 - Math.random() * 4,
+    exploded: false,
+    color: `hsl(${260 + Math.random()*40}, 100%, 70%)`
+  });
+}
+
+function explode(x, y, color) {
   for (let i = 0; i < 60; i++) {
-    particles.push({
+    fireworks.push({
       x, y,
-      radius: Math.random() * 2 + 1,
-      color: `hsl(${260 + Math.random() * 40}, 100%, 70%)`,
-      speed: Math.random() * 5 + 2,
-      angle: Math.random() * Math.PI * 2,
+      r: Math.random() * 2 + 1,
+      c: color,
+      s: Math.random() * 5 + 2,
+      a: Math.random() * Math.PI * 2,
       alpha: 1
     });
   }
 }
 
-function animateFireworks() {
+function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach((p, i) => {
-    p.x += Math.cos(p.angle) * p.speed;
-    p.y += Math.sin(p.angle) * p.speed;
-    p.alpha -= 0.02;
-    if (p.alpha <= 0) particles.splice(i, 1);
+
+  // Ambient particles
+  ctx.save();
+  ambient.forEach(p => {
+    p.y += p.s;
+    if (p.y > canvas.height) p.y = -10;
     ctx.beginPath();
-    ctx.globalAlpha = p.alpha;
-    ctx.fillStyle = p.color;
-    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fillStyle = p.c;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = p.c;
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
     ctx.fill();
   });
-  ctx.globalAlpha = 1;
-  requestAnimationFrame(animateFireworks);
-}
-animateFireworks();
+  ctx.restore();
 
-// Firework triggers on header hover
+  // Fireworks
+  fireworks.forEach((f, i) => {
+    if (!f.exploded && f.vy !== undefined) {
+      f.y += f.vy;
+      f.vy += 0.2;
+      ctx.beginPath();
+      ctx.fillStyle = f.color;
+      ctx.arc(f.x, f.y, 3, 0, Math.PI * 2);
+      ctx.fill();
+      if (f.vy >= 0) {
+        f.exploded = true;
+        explode(f.x, f.y, f.color);
+      }
+    } else if (f.alpha !== undefined) {
+      f.x += Math.cos(f.a) * f.s;
+      f.y += Math.sin(f.a) * f.s;
+      f.alpha -= 0.02;
+      if (f.alpha <= 0) fireworks.splice(i, 1);
+      ctx.beginPath();
+      ctx.globalAlpha = f.alpha;
+      ctx.fillStyle = f.c;
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  });
+
+  requestAnimationFrame(animate);
+}
+animate();
+
+// Firework trigger
 const header = document.querySelector('header');
 if (header) {
   header.addEventListener('mouseenter', () => {
     const rect = header.getBoundingClientRect();
-    createFirework(rect.left + rect.width / 2, rect.top + 10);
+    createRocket(rect.left + rect.width / 2, rect.top + rect.height);
   });
 }
