@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Profile - Shadow Chat</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="center-box">
+    <h2>Edit Profile</h2>
+    <form method="POST">
+      <label>Profile Picture (Image URL)</label>
+      <input name="pfp" placeholder="https://example.com/pfp.png" value="<%= pfp %>" />
+      
+      <label>Bio</label>
+      <textarea name="bio" rows="3"><%= bio %></textarea>
+
+      <button class="btn">Save Changes</button>
+    </form>
+    <a href="/dashboard" class="btn secondary">Back</a>
+  </div>
+</body>
+</html>
