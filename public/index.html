@@ -5,45 +5,124 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🕶️ Shadow Chat</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* START PAGE STYLES */
+    #startScreen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: radial-gradient(circle at center, #000000 60%, #111 100%);
+      color: #0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Courier New', monospace;
+      z-index: 9999;
+      transition: opacity 1s ease;
+    }
+    #startScreen h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px #0f0;
+    }
+    #enterBtn {
+      background: none;
+      border: 2px solid #0f0;
+      color: #0f0;
+      padding: 10px 25px;
+      font-size: 1.2em;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+    }
+    #enterBtn:hover {
+      background: #0f0;
+      color: #000;
+    }
+
+    /* HEADER TITLE */
+    header {
+      text-align: center;
+      color: #0f0;
+      font-family: 'Courier New', monospace;
+      font-size: 2em;
+      letter-spacing: 2px;
+      padding: 20px 0;
+      background: #000;
+      border-bottom: 1px solid #0f0;
+      text-shadow: 0 0 10px #0f0;
+    }
+  </style>
 </head>
 <body>
-  <div class="tabs">
-    <button class="tab active" data-tab="profile">Profile</button>
-    <button class="tab" data-tab="chat">Chat</button>
+
+  <!-- START PAGE -->
+  <div id="startScreen">
+    <h1>🌑 Enter the Shadows 🌑</h1>
+    <button id="enterBtn">ENTER</button>
   </div>
 
-  <div class="container">
-    <!-- PROFILE TAB -->
-    <section id="profile" class="tab-content active">
-      <h1>🕶️ Shadow Profile</h1>
-      <p>Your info is saved locally (browser)</p>
-      <img id="pfpPreview" src="default_pfp.png" alt="PFP" />
-      <input type="text" id="username" placeholder="Enter username..." />
-      <input type="text" id="pfpUrl" placeholder="Enter PFP image URL..." />
-      <button id="saveProfile">💾 Save</button>
-      <p id="status"></p>
-    </section>
+  <!-- MAIN APP -->
+  <div id="mainApp" style="display:none;">
 
-    <!-- CHAT TAB -->
-    <section id="chat" class="tab-content">
-      <h1>💬 Global Chat</h1>
-      <p id="onlineCount">🟢 Online Users: 0</p>
-      <div id="chatLog"></div>
-      <div class="chat-box">
-        <input type="text" id="message" placeholder="Type message..." />
-        <button id="sendBtn">Send</button>
-      </div>
-    </section>
+    <!-- HEADER -->
+    <header>🕶️ Shadow Chat</header>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" data-tab="profile">Profile</button>
+      <button class="tab" data-tab="chat">Chat</button>
+    </div>
+
+    <div class="container">
+      <!-- PROFILE TAB -->
+      <section id="profile" class="tab-content active">
+        <h1>🕶️ Shadow Profile</h1>
+        <p>Your info is saved locally (browser)</p>
+        <img id="pfpPreview" src="default_pfp.png" alt="PFP" />
+        <input type="text" id="username" placeholder="Enter username..." />
+        <input type="text" id="pfpUrl" placeholder="Enter PFP image URL..." />
+        <button id="saveProfile">💾 Save</button>
+        <p id="status"></p>
+      </section>
+
+      <!-- CHAT TAB -->
+      <section id="chat" class="tab-content">
+        <h1>💬 Shadow Chat 🌑</h1>
+        <p id="onlineCount">🟢 Online Users: 0</p>
+        <div id="chatLog"></div>
+        <div class="chat-box">
+          <input type="text" id="message" placeholder="Type message..." />
+          <button id="sendBtn">Send</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p style="text-align:center; margin-top:20px; font-size:0.9em; color:#888;">
+        Made by <strong>HitBoyXx23-dev</strong>
+      </p>
+    </footer>
   </div>
-
-  <!-- Footer credit -->
-  <footer>
-    <p style="text-align:center; margin-top:20px; font-size:0.9em; color:#888;">
-      Made by <strong>HitBoyXx23-dev</strong>
-    </p>
-  </footer>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
+
+  <script>
+    // START PAGE LOGIC
+    const startScreen = document.getElementById('startScreen');
+    const mainApp = document.getElementById('mainApp');
+    const enterBtn = document.getElementById('enterBtn');
+
+    enterBtn.addEventListener('click', () => {
+      startScreen.style.opacity = '0';
+      setTimeout(() => {
+        startScreen.style.display = 'none';
+        mainApp.style.display = 'block';
+      }, 1000);
+    });
+  </script>
 </body>
 </html>
