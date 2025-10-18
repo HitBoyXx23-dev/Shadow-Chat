@@ -1,18 +1,29 @@
 const socket = io();
 
-// Profile elements
+// --- Elements ---
 const usernameInput = document.getElementById("username");
 const pfpUrlInput = document.getElementById("pfpUrl");
 const saveBtn = document.getElementById("saveProfile");
 const pfpPreview = document.getElementById("pfpPreview");
 const status = document.getElementById("status");
-
-// Chat elements
+const chatLog = document.getElementById("chatLog");
 const messageInput = document.getElementById("message");
 const sendBtn = document.getElementById("sendBtn");
-const chatLog = document.getElementById("chatLog");
 
-// Load saved profile
+// --- Tabs logic ---
+const tabs = document.querySelectorAll(".tab");
+const contents = document.querySelectorAll(".tab-content");
+
+tabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    tabs.forEach((t) => t.classList.remove("active"));
+    contents.forEach((c) => c.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.tab).classList.add("active");
+  });
+});
+
+// --- Load saved profile ---
 window.addEventListener("DOMContentLoaded", () => {
   const savedName = localStorage.getItem("shadow_username");
   const savedPfp = localStorage.getItem("shadow_pfp");
@@ -22,36 +33,35 @@ window.addEventListener("DOMContentLoaded", () => {
   if (savedName) status.textContent = `🕶️ Welcome back, ${savedName}`;
 });
 
-// Save profile
+// --- Save profile ---
 saveBtn.addEventListener("click", () => {
   const name = usernameInput.value.trim();
   const pfp = pfpUrlInput.value.trim() || "default_pfp.png";
-  if (!name) return alert("Enter a username first!");
+  if (!name) return alert("Please enter a username!");
   localStorage.setItem("shadow_username", name);
   localStorage.setItem("shadow_pfp", pfp);
   pfpPreview.src = pfp;
   status.textContent = `✅ Profile saved as ${name}`;
 });
 
-// Send message
+// --- Send message ---
 sendBtn.addEventListener("click", () => {
   const name = localStorage.getItem("shadow_username") || "Anonymous";
   const pfp = localStorage.getItem("shadow_pfp") || "default_pfp.png";
   const text = messageInput.value.trim();
   if (!text) return;
-  const msg = { name, pfp, text };
-  socket.emit("chat message", msg);
+  socket.emit("chat message", { name, pfp, text });
   messageInput.value = "";
 });
 
-// Display messages from others
+// --- Receive messages ---
 socket.on("chat message", (msg) => {
-  const msgDiv = document.createElement("div");
-  msgDiv.classList.add("message");
-  msgDiv.innerHTML = `
+  const div = document.createElement("div");
+  div.classList.add("message");
+  div.innerHTML = `
     <img src="${msg.pfp}" alt="pfp">
     <strong>${msg.name}:</strong> <span>${msg.text}</span>
   `;
-  chatLog.appendChild(msgDiv);
+  chatLog.appendChild(div);
   chatLog.scrollTop = chatLog.scrollHeight;
 });
