@@ -56,7 +56,6 @@ function sendMessage() {
   const text = messageInput.value.trim();
   if (!text) return;
 
-  // ✅ Accurate local date + time with AM/PM
   const now = new Date();
   const formattedTime = now.toLocaleString([], {
     year: "numeric",
@@ -65,7 +64,7 @@ function sendMessage() {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-    hour12: true, // 👈 Adds AM/PM format
+    hour12: true,
   });
 
   const msg = { name, pfp, text, time: formattedTime };
@@ -94,7 +93,7 @@ socket.on("userCount", (count) => {
   onlineCount.textContent = `🟢 Online Users: ${count}`;
 });
 
-// --- Helper to render message ---
+// --- Render message ---
 function addMessageToLog(msg) {
   const div = document.createElement("div");
   div.classList.add("message");
@@ -114,4 +113,56 @@ function escapeHTML(str) {
   return str.replace(/[&<>'"]/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c])
   );
+}
+
+// === PURPLE FIREWORK EFFECT ===
+const canvas = document.getElementById('fireworkCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function createFirework(x, y) {
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x, y,
+      radius: Math.random() * 2 + 1,
+      color: `hsl(${260 + Math.random() * 40}, 100%, 70%)`,
+      speed: Math.random() * 5 + 2,
+      angle: Math.random() * Math.PI * 2,
+      alpha: 1
+    });
+  }
+}
+
+function animateFireworks() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach((p, i) => {
+    p.x += Math.cos(p.angle) * p.speed;
+    p.y += Math.sin(p.angle) * p.speed;
+    p.alpha -= 0.02;
+    if (p.alpha <= 0) particles.splice(i, 1);
+    ctx.beginPath();
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = p.color;
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(animateFireworks);
+}
+animateFireworks();
+
+// Firework triggers on header hover
+const header = document.querySelector('header');
+if (header) {
+  header.addEventListener('mouseenter', () => {
+    const rect = header.getBoundingClientRect();
+    createFirework(rect.left + rect.width / 2, rect.top + 10);
+  });
 }
