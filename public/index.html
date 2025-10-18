@@ -3,21 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🕶️ Shadow Chat – Local Mode</title>
+  <title>🕶️ Shadow Chat – Local User Mode</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <h1>🕶️ Shadow Chat</h1>
-    <p>Global username stored with <strong>localStorage</strong></p>
+    <p>Your global profile is saved locally with <strong>localStorage</strong>.</p>
 
-    <div class="input-area">
-      <input type="text" id="username" placeholder="Enter your username..." />
-      <button id="saveName">Save</button>
+    <!-- Profile Settings -->
+    <div class="profile-box">
+      <img id="pfpPreview" src="default_pfp.png" alt="PFP" />
+      <input type="text" id="username" placeholder="Enter username..." />
+      <input type="text" id="pfpUrl" placeholder="Enter PFP image URL..." />
+      <button id="saveProfile">💾 Save Profile</button>
+      <p id="status"></p>
     </div>
 
-    <p id="status"></p>
-
+    <!-- Chat -->
     <div class="chat-box">
       <input type="text" id="message" placeholder="Type a message..." />
       <button id="sendBtn">Send</button>
