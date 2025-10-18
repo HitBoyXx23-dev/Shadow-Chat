@@ -2,16 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🕶️ Shadow Chat – Local User Mode</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🕶️ Shadow Chat – Global</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <h1>🕶️ Shadow Chat</h1>
-    <p>Your global profile is saved locally with <strong>localStorage</strong>.</p>
+    <p>Global real-time chat with local username & PFP</p>
 
-    <!-- Profile Settings -->
     <div class="profile-box">
       <img id="pfpPreview" src="default_pfp.png" alt="PFP" />
       <input type="text" id="username" placeholder="Enter username..." />
@@ -20,7 +19,6 @@
       <p id="status"></p>
     </div>
 
-    <!-- Chat -->
     <div class="chat-box">
       <input type="text" id="message" placeholder="Type a message..." />
       <button id="sendBtn">Send</button>
@@ -29,6 +27,7 @@
     <div id="chatLog"></div>
   </div>
 
+  <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
