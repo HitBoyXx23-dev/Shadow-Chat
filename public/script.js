@@ -1,18 +1,18 @@
 // === Shadow Chat Global Client ===
 const socket = io();
 
-// --- DOM elements ---
+// --- Elements ---
 const usernameInput = document.getElementById("username");
 const pfpUrlInput = document.getElementById("pfpUrl");
 const saveBtn = document.getElementById("saveProfile");
 const pfpPreview = document.getElementById("pfpPreview");
 const status = document.getElementById("status");
-
 const chatLog = document.getElementById("chatLog");
 const messageInput = document.getElementById("message");
 const sendBtn = document.getElementById("sendBtn");
+const onlineCount = document.getElementById("onlineCount");
 
-// --- Tabs (Profile / Chat) ---
+// --- Tabs ---
 const tabs = document.querySelectorAll(".tab");
 const contents = document.querySelectorAll(".tab-content");
 tabs.forEach((tab) => {
@@ -25,7 +25,6 @@ tabs.forEach((tab) => {
 });
 
 // === PROFILE ===
-// Load saved profile
 window.addEventListener("DOMContentLoaded", () => {
   const savedName = localStorage.getItem("shadow_username");
   const savedPfp = localStorage.getItem("shadow_pfp");
@@ -35,7 +34,6 @@ window.addEventListener("DOMContentLoaded", () => {
   if (savedName) status.textContent = `🕶️ Welcome back, ${savedName}`;
 });
 
-// Save profile button
 saveBtn.addEventListener("click", () => {
   const name = usernameInput.value.trim();
   const pfp = pfpUrlInput.value.trim() || "default_pfp.png";
@@ -47,7 +45,6 @@ saveBtn.addEventListener("click", () => {
 });
 
 // === CHAT ===
-// Send message
 sendBtn.addEventListener("click", sendMessage);
 messageInput.addEventListener("keypress", (e) => {
   if (e.key === "Enter") sendMessage();
@@ -63,15 +60,14 @@ function sendMessage() {
   messageInput.value = "";
 }
 
-// === RECEIVE ===
-// History from server
+// --- Receive chat history ---
 socket.on("chat history", (history) => {
   chatLog.innerHTML = "";
   history.forEach(addMessageToLog);
   localStorage.setItem("shadow_chat_history", JSON.stringify(history));
 });
 
-// New message live
+// --- Receive new messages ---
 socket.on("chat message", (msg) => {
   addMessageToLog(msg);
   let chatHistory = JSON.parse(localStorage.getItem("shadow_chat_history") || "[]");
@@ -80,7 +76,12 @@ socket.on("chat message", (msg) => {
   localStorage.setItem("shadow_chat_history", JSON.stringify(chatHistory));
 });
 
-// === HELPERS ===
+// --- Online users counter ---
+socket.on("userCount", (count) => {
+  onlineCount.textContent = `🟢 Online Users: ${count}`;
+});
+
+// --- Helper to render message ---
 function addMessageToLog(msg) {
   const div = document.createElement("div");
   div.classList.add("message");
@@ -96,17 +97,8 @@ function addMessageToLog(msg) {
   chatLog.scrollTop = chatLog.scrollHeight;
 }
 
-// --- basic XSS-safe text escape ---
 function escapeHTML(str) {
   return str.replace(/[&<>'"]/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c])
   );
 }
-
-// --- Reload last local chat if offline ---
-window.addEventListener("load", () => {
-  const localChat = JSON.parse(localStorage.getItem("shadow_chat_history") || "[]");
-  if (localChat.length && chatLog.children.length === 0) {
-    localChat.forEach(addMessageToLog);
-  }
-});
