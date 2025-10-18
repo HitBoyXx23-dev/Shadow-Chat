@@ -6,11 +6,16 @@
 </head>
 <body>
   <div class="dashboard">
-    <h1>Welcome, <%= username %> 🖤</h1>
+    <img src="<%= pfp %>" class="pfp">
+    <h1><%= username %></h1>
+    <p class="bio"><%= bio %></p>
+
     <p>Share your link:</p>
     <div class="link-box">
-      <input value="https://shadowchat.onrender.com/u/<%= username %>" readonly />
+      <input value="https://shadowchat.onrender.com/u/<%= username %>" readonly>
     </div>
+
+    <a href="/editprofile" class="btn">Edit Profile</a>
 
     <h3>Your Anonymous Messages:</h3>
     <% if (messages.length === 0) { %>
