@@ -11,10 +11,10 @@ const io = new Server(server);
 const PORT = process.env.PORT || 10000;
 const chatFile = path.join(__dirname, "chatlog.json");
 
-// Serve frontend files
+// Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 
-// Load chat history safely
+// Load / Save chat history
 function loadChatHistory() {
   try {
     if (fs.existsSync(chatFile)) {
@@ -27,7 +27,6 @@ function loadChatHistory() {
   }
 }
 
-// Save chat history to file
 function saveChatHistory(history) {
   try {
     fs.writeFileSync(chatFile, JSON.stringify(history, null, 2));
@@ -36,32 +35,34 @@ function saveChatHistory(history) {
   }
 }
 
-// --- SOCKET.IO SETUP ---
+// --- SOCKET.IO ---
 io.on("connection", (socket) => {
   console.log("🟣 User connected:", socket.id);
 
-  // Send chat history to new connection
+  // Update & broadcast user count
+  io.emit("userCount", io.engine.clientsCount);
+
+  // Send chat history to new user
   const history = loadChatHistory();
   socket.emit("chat history", history);
 
-  // When message received
+  // Incoming message
   socket.on("chat message", (msg) => {
     console.log("💬", msg.name, ":", msg.text);
 
-    // Append and save
-    const updated = [...history, msg].slice(-200); // Keep last 200
+    const updated = [...history, msg].slice(-200);
     saveChatHistory(updated);
 
-    // Broadcast to all
     io.emit("chat message", msg);
   });
 
+  // Disconnect
   socket.on("disconnect", () => {
     console.log("🔵 User disconnected:", socket.id);
+    io.emit("userCount", io.engine.clientsCount);
   });
 });
 
-// Start server
 server.listen(PORT, () =>
   console.log(`🕶️ Shadow Chat global server running on port ${PORT}`)
 );
