@@ -55,7 +55,20 @@ function sendMessage() {
   const pfp = localStorage.getItem("shadow_pfp") || "default_pfp.png";
   const text = messageInput.value.trim();
   if (!text) return;
-  const msg = { name, pfp, text, time: new Date().toLocaleTimeString() };
+
+  // ✅ Accurate local date + time with AM/PM
+  const now = new Date();
+  const formattedTime = now.toLocaleString([], {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true, // 👈 Adds AM/PM format
+  });
+
+  const msg = { name, pfp, text, time: formattedTime };
   socket.emit("chat message", msg);
   messageInput.value = "";
 }
