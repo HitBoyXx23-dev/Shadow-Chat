@@ -67,32 +67,12 @@ button:hover {
   background: #9b00ff;
 }
 
-#status {
-  color: #a0a0ff;
-  font-size: 0.85em;
-}
-
-.chat-box {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-#message {
-  flex: 1;
-  padding: 8px;
-  background: #1a0033;
-  border: none;
-  border-radius: 8px;
-  color: white;
-}
-
 #chatLog {
   text-align: left;
   background: rgba(20, 0, 60, 0.4);
   border-radius: 10px;
   padding: 10px;
-  height: 200px;
+  height: 220px;
   overflow-y: auto;
 }
 
