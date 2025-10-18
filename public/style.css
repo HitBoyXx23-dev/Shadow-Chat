@@ -9,6 +9,76 @@ body {
   align-items: center;
 }
 
+/* === START SCREEN === */
+#startScreen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: #000;
+  color: #b266ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', monospace;
+  z-index: 9999;
+  transition: opacity 1s ease;
+}
+#startScreen h1 {
+  font-size: 2.6em;
+  margin-bottom: 25px;
+  color: #d9b3ff;
+  text-shadow: 0 0 8px #a100ff, 0 0 16px #a100ff, 0 0 32px #a100ff;
+  animation: purplePulse 2.5s ease-in-out infinite alternate;
+}
+@keyframes purplePulse {
+  0% { text-shadow: 0 0 10px #a100ff, 0 0 20px #a100ff; }
+  100% { text-shadow: 0 0 25px #cc33ff, 0 0 40px #cc33ff; }
+}
+#enterBtn {
+  background: transparent;
+  border: 2px solid #a100ff;
+  color: #d9b3ff;
+  padding: 12px 28px;
+  font-size: 1.2em;
+  cursor: pointer;
+  border-radius: 5px;
+  box-shadow: 0 0 10px #a100ff;
+  transition: 0.3s;
+}
+#enterBtn:hover {
+  background: #a100ff;
+  color: #fff;
+  box-shadow: 0 0 20px #a100ff, 0 0 40px #cc33ff;
+}
+
+/* === HEADER === */
+header {
+  position: relative;
+  text-align: center;
+  color: #c38bff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.6em;
+  letter-spacing: 2px;
+  padding: 15px 0;
+  text-shadow: 0 0 10px #a100ff, 0 0 25px #cc33ff;
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+header:hover {
+  text-shadow: 0 0 25px #cc33ff, 0 0 50px #a100ff;
+}
+
+/* === FIREWORK CANVAS === */
+#fireworkCanvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* === CHAT UI === */
 .tabs {
   display: flex;
   justify-content: center;
@@ -16,7 +86,6 @@ body {
   background: #120033;
   border-bottom: 2px solid #7a00ff;
 }
-
 .tab {
   flex: 1;
   background: none;
@@ -27,12 +96,10 @@ body {
   cursor: pointer;
   transition: 0.3s;
 }
-
 .tab.active {
   background: #7a00ff;
   color: white;
 }
-
 .container {
   width: 90%;
   max-width: 500px;
@@ -44,17 +111,11 @@ body {
   text-align: center;
   margin-top: 20px;
 }
-
-.tab-content {
-  display: none;
-}
-.tab-content.active {
-  display: block;
-}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
 
 #pfpPreview {
-  width: 100px;
-  height: 100px;
+  width: 100px; height: 100px;
   border-radius: 50%;
   border: 2px solid #8a2be2;
   object-fit: cover;
@@ -113,15 +174,12 @@ button:hover {
   align-items: center;
   gap: 10px;
 }
-
 .message img {
-  width: 35px;
-  height: 35px;
+  width: 35px; height: 35px;
   border-radius: 50%;
   border: 1px solid #7a00ff;
   object-fit: cover;
 }
-
 .message strong {
   color: #caa0ff;
 }
