@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🕶️ Shadow Chat</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="tabs">
@@ -16,8 +16,8 @@
     <!-- PROFILE TAB -->
     <section id="profile" class="tab-content active">
       <h1>🕶️ Shadow Profile</h1>
-      <p>Your info is saved in localStorage</p>
-      <img id="pfpPreview" src="default_pfp.png" alt="Profile Picture" />
+      <p>Your info is saved locally (browser)</p>
+      <img id="pfpPreview" src="default_pfp.png" alt="PFP" />
       <input type="text" id="username" placeholder="Enter username..." />
       <input type="text" id="pfpUrl" placeholder="Enter PFP image URL..." />
       <button id="saveProfile">💾 Save</button>
@@ -27,6 +27,7 @@
     <!-- CHAT TAB -->
     <section id="chat" class="tab-content">
       <h1>💬 Global Chat</h1>
+      <p id="onlineCount">🟢 Online Users: 0</p>
       <div id="chatLog"></div>
       <div class="chat-box">
         <input type="text" id="message" placeholder="Type message..." />
