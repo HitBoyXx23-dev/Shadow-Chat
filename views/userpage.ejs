@@ -6,7 +6,9 @@
 </head>
 <body>
   <div class="center-box">
-    <h2>Send a secret to <%= username %></h2>
+    <img src="<%= pfp %>" class="pfp">
+    <h2>Send a message to <%= username %></h2>
+    <p class="bio"><%= bio %></p>
     <form method="POST">
       <textarea name="message" placeholder="Write your anonymous message..." required></textarea>
       <button class="btn">Send</button>
