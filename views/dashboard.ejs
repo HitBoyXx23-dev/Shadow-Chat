@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard - Shadow Chat</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="dashboard">
+    <h1>Welcome, <%= username %> 🖤</h1>
+    <p>Share your link:</p>
+    <div class="link-box">
+      <input value="https://shadowchat.onrender.com/u/<%= username %>" readonly />
+    </div>
+
+    <h3>Your Anonymous Messages:</h3>
+    <% if (messages.length === 0) { %>
+      <p>No messages yet...</p>
+    <% } else { %>
+      <% messages.forEach(msg => { %>
+        <div class="message">
+          <p><%= msg.text %></p>
+          <span><%= msg.time %></span>
+        </div>
+      <% }) %>
+    <% } %>
+
+    <a href="/logout" class="btn secondary">Logout</a>
+  </div>
+</body>
+</html>
