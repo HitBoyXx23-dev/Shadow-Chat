@@ -20,6 +20,21 @@ body {
   text-align: center;
 }
 
+.pfp {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 2px solid #8a2be2;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.bio {
+  color: #a0a0ff;
+  font-style: italic;
+  margin-bottom: 15px;
+}
+
 input, textarea {
   width: 100%;
   padding: 10px;
