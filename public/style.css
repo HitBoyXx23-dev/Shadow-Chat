@@ -1,276 +1,163 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-
-* {
-  box-sizing: border-box;
-  transition: all 0.3s ease;
-}
-
 body {
   margin: 0;
+  background: radial-gradient(circle at top, #050505, #080018, #0a0020);
   font-family: 'Poppins', sans-serif;
-  background: radial-gradient(circle at top left, #03000b, #070018, #0c0033);
-  color: #e0dfff;
-  height: 100vh;
+  color: white;
   overflow: hidden;
-  position: relative;
 }
 
-/* --- FIREWORK BACKGROUND --- */
-#fireworkCanvas {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;           /* 👈 Puts it behind everything */
-  opacity: 0.5;         /* 👈 Slightly dimmed so UI is readable */
-  filter: blur(0.3px);
-}
-
-/* --- INTRO SCREEN --- */
-#startScreen {
-  position: fixed;
-  inset: 0;
+.center {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  background: radial-gradient(circle at center, rgba(5,0,20,0.9), rgba(0,0,0,0.95));
-  z-index: 5;           /* 👈 Over fireworks, below everything else */
-  animation: introFadeIn 1.5s ease forwards;
-}
-
-@keyframes introFadeIn {
-  from { opacity: 0; transform: scale(1.05); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-#startScreen.fadeOut {
-  opacity: 0;
-  transform: scale(0.9);
-  transition: all 1s ease;
-}
-
-.intro-box {
-  text-align: center;
-  padding: 50px 40px;
-  background: rgba(15, 0, 40, 0.9);
-  border: 2px solid #7a00ff;
-  border-radius: 25px;
-  box-shadow: 0 0 50px #7a00ff80, 0 0 100px #3e00ff40;
-  animation: float 3s ease-in-out infinite alternate;
-}
-@keyframes float {
-  from { transform: translateY(0px); }
-  to { transform: translateY(-10px); }
-}
-
-.intro-title {
-  color: #d4baff;
-  font-size: 2.6em;
-  letter-spacing: 1px;
-  text-shadow: 0 0 30px #9f57ff;
-}
-.intro-title span {
-  color: #b06fff;
-  text-shadow: 0 0 40px #a35fff;
-}
-.intro-sub {
-  font-size: 1.2em;
-  margin-top: 10px;
-  color: #c7a8ff;
-  opacity: 0.85;
-}
-#enterBtn {
-  margin-top: 35px;
-  padding: 14px 40px;
-  border-radius: 40px;
-  border: none;
-  cursor: pointer;
-  font-size: 1.2em;
-  font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, #8f00ff, #5800d4);
-  box-shadow: 0 0 25px #7a00ff;
-}
-#enterBtn:hover {
-  transform: scale(1.1);
-  background: linear-gradient(135deg, #a000ff, #6e00ff);
-  box-shadow: 0 0 50px #b366ff;
-}
-
-/* --- MAIN UI --- */
-header {
-  text-align: center;
-  padding: 15px;
-  font-size: 1.8em;
-  background: linear-gradient(90deg, #190038, #28005a);
-  color: #d0aaff;
-  text-shadow: 0 0 15px #a15cff;
-  border-bottom: 2px solid #7a00ff;
-  z-index: 3;
-  position: relative;
-}
-
-.tabs {
-  display: flex;
   justify-content: center;
-  background: #120033;
-  border-bottom: 2px solid #7a00ff;
-  position: relative;
-  z-index: 3;
-}
-.tab {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: #bbaaff;
-  padding: 15px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.tab.active {
-  background: linear-gradient(90deg, #7a00ff, #3e007a);
-  color: #fff;
-  box-shadow: 0 0 25px #7a00ff;
+  height: 100vh;
 }
 
-.container {
-  width: 90%;
-  max-width: 700px;
-  margin: 25px auto;
-  background: rgba(15, 5, 30, 0.85);
-  border: 2px solid #7a00ff;
-  border-radius: 20px;
-  box-shadow: 0 0 40px #6f00ff80;
-  padding: 25px;
-  text-align: center;
-  height: 70vh;
-  overflow: hidden;
-  position: relative;
-  z-index: 3;
+.title {
+  color: #a020f0;
+  font-size: 3em;
+  text-shadow: 0 0 20px #8000ff;
 }
 
-#pfpPreview {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  border: 3px solid #8a2be2;
-  object-fit: cover;
-  margin-bottom: 10px;
-  box-shadow: 0 0 20px #7a00ff80;
-}
-input {
-  width: 90%;
+#enter-screen input {
+  margin-top: 20px;
   padding: 10px;
-  margin: 6px 0;
-  background: #1b0036;
-  border: 1px solid #7a00ff;
-  border-radius: 10px;
+  width: 200px;
+  background: #111;
+  border: 1px solid #a020f0;
   color: #fff;
-  text-align: center;
+  border-radius: 8px;
 }
-button {
-  background: linear-gradient(135deg, #7a00ff, #5800aa);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 20px;
-  cursor: pointer;
+
+#enter-btn {
   margin-top: 10px;
-  font-weight: 600;
-  box-shadow: 0 0 15px #7a00ff90;
-}
-button:hover {
-  background: linear-gradient(135deg, #8a00ff, #6400cc);
-  box-shadow: 0 0 25px #b366ff;
-  transform: translateY(-2px);
+  background: linear-gradient(90deg, #4b0082, #8000ff);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 0 15px #8000ff;
 }
 
-/* --- CHAT --- */
-#chatLog {
-  background: rgba(20, 0, 60, 0.4);
-  height: 55%;
-  border-radius: 10px;
-  padding: 15px;
-  overflow-y: auto;
-  text-align: left;
-  scrollbar-width: thin;
-  scrollbar-color: #7a00ff #120033;
-}
-.message {
-  margin: 6px 0;
-  background: rgba(100, 0, 200, 0.15);
-  padding: 10px;
-  border-left: 4px solid #9b00ff;
-  border-radius: 10px;
+#chat-container {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  flex-direction: column;
+  height: 100vh;
 }
-.message img.pfp {
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10, 0, 30, 0.8);
+  padding: 10px 20px;
+  border-bottom: 1px solid #8000ff;
+}
+
+.profile img {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1px solid #7a00ff;
 }
-.media {
-  max-width: 100%;
-  border-radius: 10px;
-  margin-top: 5px;
-  box-shadow: 0 0 10px #7a00ff60;
-}
-.chat-box {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  background: rgba(20, 0, 60, 0.5);
-  border-radius: 10px;
-  padding: 8px;
-}
-.chat-box input {
-  flex: 1;
-  margin: 0 10px;
-}
-#uploadBtn {
-  font-size: 1.2em;
-  background: transparent;
-  border: 1px solid #7a00ff;
-  color: #c9aaff;
-  padding: 8px 12px;
-  border-radius: 8px;
-}
-#uploadBtn:hover {
-  background: #7a00ff;
+
+.call-controls button {
+  background: none;
+  border: 1px solid #a020f0;
   color: white;
-  box-shadow: 0 0 15px #7a00ff;
+  margin: 0 5px;
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
 }
 
-/* --- CALL --- */
-.video-container {
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  background: rgba(0, 0, 20, 0.6);
   display: flex;
-  justify-content: space-evenly;
-  flex-wrap: wrap;
-  margin-top: 15px;
-  gap: 10px;
+  flex-direction: column;
 }
+
+.message {
+  margin: 10px 0;
+  background: rgba(40, 0, 80, 0.5);
+  padding: 8px 12px;
+  border-radius: 10px;
+  max-width: 60%;
+}
+
+.message.self {
+  background: rgba(80, 0, 160, 0.6);
+  align-self: flex-end;
+}
+
+#input-area {
+  display: flex;
+  padding: 10px;
+  background: rgba(5, 0, 20, 0.9);
+}
+
+#input-area input[type="text"] {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  background: #111;
+  color: white;
+}
+
+#send-btn, #file-btn {
+  margin-left: 10px;
+  background: #4b0082;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+}
+
 video {
-  width: 45%;
-  border: 2px solid #7a00ff;
-  border-radius: 15px;
-  box-shadow: 0 0 20px #7a00ff80;
-}
-.call-buttons {
-  margin-top: 15px;
-  display: flex;
-  justify-content: center;
-  gap: 15px;
+  width: 200px;
+  height: 150px;
+  border: 2px solid #8000ff;
+  border-radius: 10px;
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  display: none;
 }
 
-/* --- FOOTER --- */
-footer {
-  text-align: center;
-  color: #888;
-  font-size: 0.9em;
-  margin-top: 10px;
-  text-shadow: 0 0 10px #48007a;
-  position: relative;
-  z-index: 3;
+.hidden { display: none; }
+
+#shadowTitle {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2.5em;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  text-shadow: 0 0 20px #8000ff, 0 0 40px #4b0082;
+  z-index: 20;
+  transition: color 0.3s, text-shadow 0.3s;
+  pointer-events: auto;
+}
+
+#shadowTitle:hover {
+  color: #a020f0;
+  text-shadow: 0 0 30px #a020f0, 0 0 60px #8000ff;
+}
+
+#bgParticles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: transparent;
 }
