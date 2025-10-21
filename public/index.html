@@ -1,79 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🕶️ Shadow Chat</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- FIREWORK CANVAS -->
-  <canvas id="fireworkCanvas"></canvas>
+<canvas id="fireworkCanvas"></canvas>
 
-  <!-- START PAGE -->
-  <div id="startScreen">
-    <h1>💜 Enter the Shadows 💜</h1>
-    <button id="enterBtn">ENTER</button>
+<div id="startScreen">
+  <h1>💜 Enter the Shadows 💜</h1>
+  <button id="enterBtn">ENTER</button>
+</div>
+
+<div id="mainApp" style="display:none;">
+  <header>🕶️ Shadow Chat</header>
+  <div class="tabs">
+    <button class="tab active" data-tab="profile">Profile</button>
+    <button class="tab" data-tab="chat">Chat</button>
+    <button class="tab" data-tab="call">Call</button>
   </div>
 
-  <!-- MAIN APP -->
-  <div id="mainApp" style="display:none;">
-    <header>🕶️ Shadow Chat</header>
+  <div class="container">
+    <section id="profile" class="tab-content active">
+      <h1>🕶️ Shadow Profile</h1>
+      <p>Your info is saved locally</p>
+      <img id="pfpPreview" src="default_pfp.png">
+      <input id="username" placeholder="Enter username">
+      <input id="pfpUrl" placeholder="Enter PFP image URL">
+      <button id="saveProfile">💾 Save</button>
+      <p id="status"></p>
+    </section>
 
-    <!-- TABS -->
-    <div class="tabs">
-      <button class="tab active" data-tab="profile">Profile</button>
-      <button class="tab" data-tab="chat">Chat</button>
-    </div>
+    <section id="chat" class="tab-content">
+      <h1>💬 Shadow Chat 🌑</h1>
+      <p id="onlineCount">🟢 Online Users: 0</p>
+      <div id="chatLog"></div>
+      <div class="chat-box">
+        <input id="message" placeholder="Type or paste a link">
+        <button id="sendBtn">Send</button>
+      </div>
+    </section>
 
-    <div class="container">
-      <!-- PROFILE TAB -->
-      <section id="profile" class="tab-content active">
-        <h1>🕶️ Shadow Profile</h1>
-        <p>Your info is saved locally (browser)</p>
-        <img id="pfpPreview" src="default_pfp.png" alt="PFP" />
-        <input type="text" id="username" placeholder="Enter username..." />
-        <input type="text" id="pfpUrl" placeholder="Enter PFP image URL..." />
-        <button id="saveProfile">💾 Save</button>
-        <p id="status"></p>
-      </section>
-
-      <!-- CHAT TAB -->
-      <section id="chat" class="tab-content">
-        <h1>💬 Shadow Chat 🌑</h1>
-        <p id="onlineCount">🟢 Online Users: 0</p>
-        <div id="chatLog"></div>
-        <div class="chat-box">
-          <input type="text" id="message" placeholder="Type message..." />
-          <button id="sendBtn">Send</button>
-        </div>
-      </section>
-    </div>
-
-    <footer>
-      <p style="text-align:center; margin-top:20px; font-size:0.9em; color:#888;">
-        Made by <strong>HitBoyXx23-dev</strong>
-      </p>
-    </footer>
+    <section id="call" class="tab-content">
+      <h1>🎥 Shadow Call</h1>
+      <div class="video-container">
+        <video id="localVideo" autoplay muted></video>
+        <video id="remoteVideo" autoplay></video>
+      </div>
+      <div class="call-buttons">
+        <button id="startCall">Join Call</button>
+        <button id="endCall">End</button>
+      </div>
+    </section>
   </div>
+</div>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="script.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="script.js"></script>
 
-  <script>
-    // START PAGE LOGIC
-    const startScreen = document.getElementById('startScreen');
-    const mainApp = document.getElementById('mainApp');
-    const enterBtn = document.getElementById('enterBtn');
-
-    enterBtn.addEventListener('click', () => {
-      startScreen.style.opacity = '0';
-      setTimeout(() => {
-        startScreen.style.display = 'none';
-        mainApp.style.display = 'block';
-      }, 1000);
-    });
-  </script>
+<script>
+const startScreen = document.getElementById('startScreen');
+const mainApp = document.getElementById('mainApp');
+document.getElementById('enterBtn').onclick = () => {
+  startScreen.style.opacity = '0';
+  setTimeout(()=>{startScreen.style.display='none';mainApp.style.display='block';},1000);
+};
+</script>
 </body>
 </html>
