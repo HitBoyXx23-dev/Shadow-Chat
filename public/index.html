@@ -1,73 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🕶️ Shadow Chat</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>🕶️ Shadow Chat Ultra</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <canvas id="fireworkCanvas"></canvas>
 
-<canvas id="fireworkCanvas"></canvas>
-
-<div id="startScreen">
-  <h1>💜 Enter the Shadows 💜</h1>
-  <button id="enterBtn">ENTER</button>
-</div>
-
-<div id="mainApp" style="display:none;">
-  <header>🕶️ Shadow Chat</header>
-  <div class="tabs">
-    <button class="tab active" data-tab="profile">Profile</button>
-    <button class="tab" data-tab="chat">Chat</button>
-    <button class="tab" data-tab="call">Call</button>
+  <!-- Intro Screen -->
+  <div id="startScreen">
+    <h1>💜 Enter the Shadows 💜</h1>
+    <button id="enterBtn">ENTER</button>
   </div>
 
-  <div class="container">
-    <section id="profile" class="tab-content active">
-      <h1>🕶️ Shadow Profile</h1>
-      <p>Your info is saved locally</p>
-      <img id="pfpPreview" src="default_pfp.png">
-      <input id="username" placeholder="Enter username">
-      <input id="pfpUrl" placeholder="Enter PFP image URL">
-      <button id="saveProfile">💾 Save</button>
-      <p id="status"></p>
-    </section>
+  <!-- Main App -->
+  <div id="mainApp" style="display:none;">
+    <header>🕶️ Shadow Chat Ultra</header>
 
-    <section id="chat" class="tab-content">
-      <h1>💬 Shadow Chat 🌑</h1>
-      <p id="onlineCount">🟢 Online Users: 0</p>
-      <div id="chatLog"></div>
-      <div class="chat-box">
-        <input id="message" placeholder="Type or paste a link">
-        <button id="sendBtn">Send</button>
-      </div>
-    </section>
+    <div class="tabs">
+      <button class="tab active" data-tab="profile">Profile</button>
+      <button class="tab" data-tab="chat">Chat</button>
+      <button class="tab" data-tab="call">Call</button>
+    </div>
 
-    <section id="call" class="tab-content">
-      <h1>🎥 Shadow Call</h1>
-      <div class="video-container">
-        <video id="localVideo" autoplay muted></video>
-        <video id="remoteVideo" autoplay></video>
-      </div>
-      <div class="call-buttons">
-        <button id="startCall">Join Call</button>
-        <button id="endCall">End</button>
-      </div>
-    </section>
+    <div class="container">
+      <!-- Profile -->
+      <section id="profile" class="tab-content active">
+        <h1>🕶️ Shadow Profile</h1>
+        <p>Your info is stored locally.</p>
+        <img id="pfpPreview" src="default_pfp.png" />
+        <input id="username" placeholder="Enter username..." />
+        <input id="pfpUrl" placeholder="Enter PFP image URL..." />
+        <button id="saveProfile">💾 Save</button>
+        <p id="status"></p>
+      </section>
+
+      <!-- Chat -->
+      <section id="chat" class="tab-content">
+        <h1>💬 Global Chat</h1>
+        <p id="onlineCount">🟢 Online Users: 0</p>
+        <div id="chatLog"></div>
+        <div class="chat-box">
+          <input type="file" id="fileInput" hidden />
+          <button id="uploadBtn">📎</button>
+          <input id="message" placeholder="Type message or paste media URL..." />
+          <button id="sendBtn">Send</button>
+        </div>
+      </section>
+
+      <!-- Call -->
+      <section id="call" class="tab-content">
+        <h1>🎥 Shadow Call</h1>
+        <div class="video-container">
+          <video id="localVideo" autoplay muted></video>
+          <video id="remoteVideo" autoplay></video>
+        </div>
+        <div class="call-buttons">
+          <button id="startCall">Join Call</button>
+          <button id="endCall">End</button>
+        </div>
+      </section>
+    </div>
   </div>
-</div>
 
-<script src="/socket.io/socket.io.js"></script>
-<script src="script.js"></script>
+  <footer><p>Made by <strong>HitBoyXx23-dev</strong></p></footer>
 
-<script>
-const startScreen = document.getElementById('startScreen');
-const mainApp = document.getElementById('mainApp');
-document.getElementById('enterBtn').onclick = () => {
-  startScreen.style.opacity = '0';
-  setTimeout(()=>{startScreen.style.display='none';mainApp.style.display='block';},1000);
-};
-</script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+  <script>
+    const start=document.getElementById('startScreen');
+    const app=document.getElementById('mainApp');
+    document.getElementById('enterBtn').onclick=()=>{
+      start.style.opacity='0';
+      setTimeout(()=>{start.style.display='none';app.style.display='block';},1000);
+    };
+  </script>
 </body>
 </html>
