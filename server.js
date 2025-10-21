@@ -1,4 +1,3 @@
-// Shadow Chat v2.5 – fully working core
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -11,11 +10,12 @@ const server = http.createServer(app);
 const io = new Server(server);
 const PORT = 3000;
 
+// Serve static files
 const PUBLIC = path.join(__dirname, "public");
 app.use(express.static(PUBLIC));
 app.use(express.json());
 
-// ---- File uploads (base64 only, temp in memory) ----
+// === Temporary file upload (memory only) ===
 const upload = multer({ storage: multer.memoryStorage() });
 app.post("/upload", upload.single("file"), (req, res) => {
   if (!req.file) return res.status(400).send("No file uploaded");
@@ -23,46 +23,36 @@ app.post("/upload", upload.single("file"), (req, res) => {
   res.json({ data: base64 });
 });
 
-// ---- Persistent chat ----
+// === Chat persistence ===
 const CHAT_FILE = path.join(__dirname, "chatHistory.json");
-let chat = fs.existsSync(CHAT_FILE)
-  ? JSON.parse(fs.readFileSync(CHAT_FILE, "utf8") || "[]")
-  : [];
+let chatHistory = [];
+if (fs.existsSync(CHAT_FILE)) {
+  try {
+    chatHistory = JSON.parse(fs.readFileSync(CHAT_FILE, "utf8"));
+  } catch {
+    chatHistory = [];
+  }
+}
 
-let users = {}; // socket.id -> username
+// === Socket.io ===
+let users = {};
 
 io.on("connection", (socket) => {
-  // register user
-  socket.on("register", (name) => {
-    users[socket.id] = name;
+  socket.on("register", (user) => {
+    users[socket.id] = user;
     io.emit("userList", Object.values(users));
-    socket.emit("chatHistory", chat);
+    socket.emit("chatHistory", chatHistory);
   });
 
-  // chat
   socket.on("chatMessage", (msg) => {
-    chat.push(msg);
-    fs.writeFileSync(CHAT_FILE, JSON.stringify(chat, null, 2));
+    chatHistory.push(msg);
+    fs.writeFileSync(CHAT_FILE, JSON.stringify(chatHistory, null, 2));
     io.emit("chatMessage", msg);
   });
 
-  // ---- 1-on-1 WebRTC signaling ----
-  socket.on("callUser", ({ to, offer }) => {
-    const target = Object.keys(users).find((id) => users[id] === to);
-    if (target) io.to(target).emit("incomingCall", { from: users[socket.id], offer });
-  });
-  socket.on("answerCall", ({ to, answer }) => {
-    const target = Object.keys(users).find((id) => users[id] === to);
-    if (target) io.to(target).emit("callAnswered", { answer });
-  });
-  socket.on("iceCandidate", ({ to, candidate }) => {
-    const target = Object.keys(users).find((id) => users[id] === to);
-    if (target) io.to(target).emit("iceCandidate", { candidate });
-  });
-
-  // ---- Group room join/leave ----
-  socket.on("joinGroup", (room) => socket.join("group"));
-  socket.on("leaveGroup", (room) => socket.leave("group"));
+  // Group call room
+  socket.on("joinGroup", () => socket.join("group"));
+  socket.on("leaveGroup", () => socket.leave("group"));
   socket.on("groupAudio", (data) => socket.to("group").emit("groupAudio", data));
 
   socket.on("disconnect", () => {
