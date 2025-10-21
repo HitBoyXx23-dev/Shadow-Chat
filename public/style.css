@@ -52,13 +52,14 @@ body {
 }
 
 #shadowTitle {
-  font-size: 1.8em;
-  color: #caaaff;
-  text-shadow: 0 0 15px #8000ff;
+  font-size: 2em;
+  color: #d5bfff;
+  text-shadow: 0 0 20px #8000ff;
 }
 
 #online-users {
   text-align: right;
+  width: 180px;
 }
 
 #online-users h3 {
@@ -71,13 +72,13 @@ body {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 100px;
+  max-height: 120px;
   overflow-y: auto;
 }
 
 #user-list li {
   cursor: pointer;
-  padding: 2px 6px;
+  padding: 4px 6px;
   border-radius: 5px;
   transition: 0.2s;
 }
@@ -114,32 +115,34 @@ body {
   flex: 1;
   display: none;
   flex-direction: column;
-  padding: 10px;
+  padding: 10px 30px;
   overflow-y: auto;
 }
 
 .tab.active { display: flex; }
 
-/* Chat */
+/* Chat Tab - Bigger */
 #messages {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
+  padding: 20px;
   background: rgba(0, 0, 20, 0.6);
-  display: flex;
-  flex-direction: column;
+  border-radius: 10px;
+  margin-bottom: 10px;
 }
 
 .message {
   margin: 10px 0;
-  background: rgba(40, 0, 80, 0.5);
-  padding: 8px 12px;
+  background: rgba(40, 0, 80, 0.6);
+  padding: 10px 14px;
   border-radius: 10px;
-  max-width: 60%;
+  max-width: 75%;
+  line-height: 1.4em;
+  font-size: 1.05em;
 }
 
 .message.self {
-  background: rgba(80, 0, 160, 0.6);
+  background: rgba(90, 0, 180, 0.6);
   align-self: flex-end;
 }
 
@@ -147,16 +150,18 @@ body {
   display: flex;
   padding: 10px;
   background: rgba(5, 0, 20, 0.9);
+  border-radius: 10px;
 }
 
 #input-area input[type="text"] {
   flex: 1;
-  padding: 10px;
+  padding: 12px;
   border-radius: 8px;
   border: none;
   outline: none;
   background: #111;
   color: white;
+  font-size: 1em;
 }
 
 #send-btn, #file-btn {
@@ -169,7 +174,7 @@ body {
   cursor: pointer;
 }
 
-/* Profile */
+/* Profile Tab */
 #profile-tab {
   align-items: center;
   text-align: center;
@@ -184,34 +189,35 @@ body {
   margin: 15px 0;
 }
 
-#change-pfp, #save-username {
-  background: #4b0082;
-  border: none;
-  color: white;
-  border-radius: 8px;
-  padding: 8px 15px;
-  cursor: pointer;
-  margin-top: 10px;
+/* Call Tab */
+#call-videos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
 }
 
-/* Call */
-#call-tab video {
-  width: 200px;
-  height: 150px;
+#call-videos video {
+  width: 250px;
+  height: 200px;
   border: 2px solid #8000ff;
   border-radius: 10px;
-  margin: 10px auto;
   display: none;
 }
 
-#end-call-btn {
-  align-self: center;
-  margin-top: 20px;
+.call-controls {
+  display: flex;
+  justify-content: center;
+  margin: 15px 0;
+}
+
+.call-controls button {
   background: #4b0082;
-  border: none;
   color: white;
+  border: none;
   border-radius: 8px;
-  padding: 8px 15px;
+  padding: 10px 15px;
+  margin: 0 5px;
   cursor: pointer;
 }
 
@@ -223,5 +229,4 @@ body {
   width: 100%;
   height: 100%;
   z-index: -1;
-  background: transparent;
 }
