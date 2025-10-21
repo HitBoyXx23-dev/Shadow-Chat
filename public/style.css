@@ -2,19 +2,18 @@
 
 * {
   box-sizing: border-box;
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
 }
 
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
-  background: radial-gradient(circle at top left, #060010, #090022, #0a0033);
-  color: #e5dfff;
+  background: radial-gradient(circle at top left, #03000b, #070018, #0c0033);
+  color: #e0dfff;
   height: 100vh;
   overflow: hidden;
 }
 
-/* --- Intro Screen --- */
 #fireworkCanvas {
   position: fixed;
   inset: 0;
@@ -22,42 +21,78 @@ body {
   z-index: 1;
 }
 
+/* === INTRO SCREEN === */
 #startScreen {
-  position: absolute;
+  position: fixed;
   inset: 0;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle, #000010 30%, #000);
-  color: #b994ff;
-  text-align: center;
-  transition: opacity 1s;
-  z-index: 2;
-}
-#startScreen h1 {
-  font-size: 2.2em;
-  text-shadow: 0 0 25px #8a2be2;
-  letter-spacing: 1px;
-}
-#enterBtn {
-  margin-top: 25px;
-  padding: 12px 40px;
-  border: none;
-  border-radius: 30px;
-  background: linear-gradient(135deg, #7a00ff, #5800aa);
-  color: #fff;
-  cursor: pointer;
-  font-size: 1.1em;
-  letter-spacing: 1px;
-  box-shadow: 0 0 20px #7a00ff;
-}
-#enterBtn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 25px #b366ff;
+  background: radial-gradient(circle at center, #050011 20%, #000);
+  z-index: 10;
+  animation: introFadeIn 1.5s ease forwards;
 }
 
-/* --- Main Layout --- */
+@keyframes introFadeIn {
+  from { opacity: 0; transform: scale(1.05); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+#startScreen.fadeOut {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 1s ease;
+}
+
+.intro-box {
+  text-align: center;
+  padding: 40px 30px;
+  background: rgba(15, 0, 40, 0.8);
+  border: 2px solid #7a00ff;
+  border-radius: 20px;
+  box-shadow: 0 0 40px #7a00ff80, 0 0 80px #4000ff40;
+  animation: float 3s ease-in-out infinite alternate;
+}
+@keyframes float {
+  from { transform: translateY(0px); }
+  to { transform: translateY(-10px); }
+}
+
+.intro-title {
+  color: #d4baff;
+  font-size: 2.3em;
+  letter-spacing: 1px;
+  text-shadow: 0 0 30px #9f57ff;
+}
+.intro-title span {
+  color: #b06fff;
+  text-shadow: 0 0 35px #a35fff;
+}
+.intro-sub {
+  font-size: 1.1em;
+  margin-top: 8px;
+  color: #c7a8ff;
+  opacity: 0.8;
+}
+#enterBtn {
+  margin-top: 30px;
+  padding: 12px 35px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #8f00ff, #5a00b5);
+  box-shadow: 0 0 25px #7a00ff;
+}
+#enterBtn:hover {
+  transform: scale(1.08);
+  background: linear-gradient(135deg, #a000ff, #6e00d4);
+  box-shadow: 0 0 40px #b366ff;
+}
+
+/* === MAIN LAYOUT === */
 header {
   text-align: center;
   padding: 15px;
@@ -69,7 +104,6 @@ header {
   border-bottom: 2px solid #7a00ff;
 }
 
-/* --- Tabs --- */
 .tabs {
   display: flex;
   justify-content: center;
@@ -84,23 +118,17 @@ header {
   padding: 15px;
   font-weight: 600;
   cursor: pointer;
-  font-size: 1em;
-}
-.tab:hover {
-  background: rgba(160, 0, 255, 0.2);
-  color: #fff;
 }
 .tab.active {
   background: linear-gradient(90deg, #7a00ff, #3e007a);
   color: #fff;
-  box-shadow: 0 0 20px #7a00ff;
+  box-shadow: 0 0 25px #7a00ff;
 }
 
-/* --- Container --- */
 .container {
   width: 90%;
   max-width: 700px;
-  margin: 30px auto;
+  margin: 25px auto;
   background: rgba(15, 5, 30, 0.9);
   border: 2px solid #7a00ff;
   border-radius: 20px;
@@ -111,22 +139,7 @@ header {
   overflow: hidden;
 }
 
-/* --- Tabs Content --- */
-.tab-content {
-  display: none;
-  height: 100%;
-  animation: fadeIn 0.5s ease forwards;
-}
-.tab-content.active {
-  display: block;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* --- Profile --- */
+/* === PROFILE === */
 #pfpPreview {
   width: 120px;
   height: 120px;
@@ -163,7 +176,7 @@ button:hover {
   transform: translateY(-2px);
 }
 
-/* --- Chat --- */
+/* === CHAT === */
 #chatLog {
   background: rgba(20, 0, 60, 0.4);
   height: 55%;
@@ -174,14 +187,6 @@ button:hover {
   scrollbar-width: thin;
   scrollbar-color: #7a00ff #120033;
 }
-#chatLog::-webkit-scrollbar {
-  width: 6px;
-}
-#chatLog::-webkit-scrollbar-thumb {
-  background-color: #7a00ff;
-  border-radius: 6px;
-}
-
 .message {
   margin: 6px 0;
   background: rgba(100, 0, 200, 0.15);
@@ -191,7 +196,6 @@ button:hover {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  animation: fadeIn 0.3s ease;
 }
 .message img.pfp {
   width: 40px;
@@ -209,7 +213,6 @@ button:hover {
   margin-top: 10px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   background: rgba(20, 0, 60, 0.5);
   border-radius: 10px;
   padding: 8px;
@@ -232,7 +235,7 @@ button:hover {
   box-shadow: 0 0 15px #7a00ff;
 }
 
-/* --- Call Section --- */
+/* === CALL SECTION === */
 .video-container {
   display: flex;
   justify-content: space-evenly;
@@ -253,18 +256,11 @@ video {
   gap: 15px;
 }
 
-/* --- Footer --- */
+/* === FOOTER === */
 footer {
   text-align: center;
   color: #888;
   font-size: 0.9em;
   margin-top: 10px;
   text-shadow: 0 0 10px #48007a;
-}
-
-/* --- Mobile --- */
-@media(max-width:600px){
-  header{font-size:1.2em;}
-  .container{height:75vh;padding:15px;}
-  video{width:90%;}
 }
