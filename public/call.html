@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Shadow Chat — Call</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="fireworkCanvas"></canvas>
+
+  <header>🎥 Shadow Call</header>
+  <div class="nav-links">
+    <a href="index.html">🕶️ Profile</a>
+    <a href="chat.html">💬 Chat</a>
+  </div>
+
+  <div class="container">
+    <h1>🎥 Join a Call</h1>
+    <div class="video-container">
+      <video id="localVideo" autoplay muted></video>
+      <video id="remoteVideo" autoplay></video>
+    </div>
+
+    <div class="call-buttons">
+      <button id="startCall">Join Call</button>
+      <button id="endCall">End Call</button>
+    </div>
+  </div>
+
+  <footer><p>Made by <strong>HitBoyXx23-dev</strong></p></footer>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
