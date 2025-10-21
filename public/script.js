@@ -4,7 +4,19 @@ let pfp = localStorage.getItem("shadow_pfp") || "default_pfp.png";
 localStorage.setItem("shadow_username", username);
 
 let localStream;
-let peers = {}; // peerConnections by socketId
+let screenStream;
+let peers = {};
+let isMuted = false;
+let isSharing = false;
+
+// === BANNER SYSTEM ===
+const banner = document.getElementById("banner");
+function showBanner(msg, color = "#8000ff") {
+  banner.textContent = msg;
+  banner.style.background = color;
+  banner.style.opacity = "1";
+  setTimeout(() => (banner.style.opacity = "0"), 3000);
+}
 
 // === ENTER SCREEN ===
 document.getElementById("enter-btn").onclick = () => {
@@ -101,46 +113,95 @@ document.getElementById("save-username").onclick = () => {
   }
 };
 
-// === CALL NOTIFICATIONS ===
-const callTab = document.getElementById("call-tab");
-function showNotice(msg, color = "#8000ff") {
-  const note = document.createElement("div");
-  note.textContent = msg;
-  note.style.cssText = `
-    background:${color};color:white;padding:10px 15px;
-    border-radius:8px;margin-top:15px;text-align:center;
-    box-shadow:0 0 10px ${color};opacity:0;transition:opacity .3s;
-  `;
-  callTab.prepend(note);
-  setTimeout(() => note.style.opacity = "1", 50);
-  setTimeout(() => {
-    note.style.opacity = "0";
-    setTimeout(() => note.remove(), 500);
-  }, 3000);
-}
-
-// === WEBRTC GROUP AUDIO ===
+// === WEBRTC SETUP ===
 async function createPeerConnection(id) {
   const pc = new RTCPeerConnection();
   peers[id] = pc;
-  localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-  pc.ontrack = e => { const a = new Audio(); a.srcObject = e.streams[0]; a.play(); };
+  localStream?.getTracks().forEach(track => pc.addTrack(track, localStream));
+  pc.ontrack = e => {
+    const a = new Audio();
+    a.srcObject = e.streams[0];
+    a.autoplay = true;
+  };
   pc.onicecandidate = e => {
     if (e.candidate) socket.emit("candidate", { candidate: e.candidate, to: id });
   };
   return pc;
 }
 
+// === JOIN CALL ===
 document.getElementById("joinCall").onclick = async () => {
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     socket.emit("joinGroup");
-    showNotice("🔊 You joined the call", "#4b0082");
-  } catch (err) {
-    showNotice("❌ Microphone access denied", "crimson");
+    showBanner("🔊 Joined the call", "#4b0082");
+  } catch {
+    showBanner("❌ Microphone access denied", "crimson");
   }
 };
 
+// === LEAVE CALL ===
+document.getElementById("leaveCall").onclick = () => {
+  socket.emit("leaveGroup");
+  Object.values(peers).forEach(pc => pc.close());
+  peers = {};
+  if (localStream) localStream.getTracks().forEach(t => t.stop());
+  stopScreenShare();
+  showBanner("❌ Left the call", "#a020f0");
+};
+
+// === MUTE MIC ===
+document.getElementById("muteMic").onclick = () => {
+  if (!localStream) return showBanner("⚠️ Not in call");
+  isMuted = !isMuted;
+  localStream.getAudioTracks().forEach(track => (track.enabled = !isMuted));
+  document.getElementById("muteMic").textContent = isMuted ? "🔇 Unmute Mic" : "🎤 Mute Mic";
+  showBanner(isMuted ? "🎙️ Mic Muted" : "🎤 Mic Unmuted", "#8000ff");
+};
+
+// === SCREEN SHARE ===
+const shareBtn = document.getElementById("shareScreen");
+shareBtn.onclick = async () => {
+  if (isSharing) return stopScreenShare();
+
+  try {
+    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+    isSharing = true;
+    showBanner("🖥️ Started Screen Share", "#a020f0");
+
+    for (const id in peers) {
+      screenStream.getTracks().forEach(track => peers[id].addTrack(track, screenStream));
+    }
+
+    const preview = document.getElementById("screen-preview");
+    preview.innerHTML = "";
+    const video = document.createElement("video");
+    video.srcObject = screenStream;
+    video.autoplay = true;
+    video.muted = true;
+    video.style.width = "80%";
+    video.style.border = "2px solid #8000ff";
+    video.style.borderRadius = "10px";
+    preview.appendChild(video);
+
+    screenStream.getTracks().forEach(track => (track.onended = stopScreenShare));
+    shareBtn.textContent = "🛑 Stop Sharing";
+  } catch {
+    showBanner("❌ Screen Share Cancelled", "crimson");
+  }
+};
+
+function stopScreenShare() {
+  if (!isSharing || !screenStream) return;
+  screenStream.getTracks().forEach(t => t.stop());
+  screenStream = null;
+  isSharing = false;
+  document.getElementById("screen-preview").innerHTML = "";
+  shareBtn.textContent = "🖥️ Share Screen";
+  showBanner("🛑 Stopped Screen Share", "#4b0082");
+}
+
+// === SIGNALING ===
 socket.on("user-joined", async id => {
   const pc = await createPeerConnection(id);
   const offer = await pc.createOffer();
@@ -171,15 +232,7 @@ socket.on("user-left", id => {
   }
 });
 
-document.getElementById("leaveCall").onclick = () => {
-  socket.emit("leaveGroup");
-  Object.values(peers).forEach(pc => pc.close());
-  peers = {};
-  if (localStream) localStream.getTracks().forEach(t => t.stop());
-  showNotice("❌ You left the call", "#a020f0");
-};
-
-// === MOBILE SCROLL FIX ===
+// === MOBILE INPUT FIX ===
 const messageInput = document.getElementById("message-input");
 messageInput.addEventListener("focus", () => {
   setTimeout(() => {
@@ -187,19 +240,31 @@ messageInput.addEventListener("focus", () => {
   }, 300);
 });
 
-// === BACKGROUND PARTICLES ===
-const c = document.getElementById("bgParticles"), ctx = c.getContext("2d");
-function resize() { c.width = innerWidth; c.height = innerHeight; }
+// === PARTICLE BACKGROUND ===
+const c = document.getElementById("bgParticles"),
+  ctx = c.getContext("2d");
+function resize() {
+  c.width = innerWidth;
+  c.height = innerHeight;
+}
 resize();
 window.onresize = resize;
-window.addEventListener("orientationchange", () => setTimeout(resize, 500));
 
 let parts = [];
-function add() { parts.push({ x: Math.random() * c.width, y: 0, v: Math.random() * 2 + 1, s: Math.random() * 2 + 1, l: 200 }); }
+function add() {
+  parts.push({
+    x: Math.random() * c.width,
+    y: 0,
+    v: Math.random() * 2 + 1,
+    s: Math.random() * 2 + 1,
+    l: 200
+  });
+}
 function loop() {
   ctx.clearRect(0, 0, c.width, c.height);
   parts.forEach((p, i) => {
-    p.y += p.v; p.l--;
+    p.y += p.v;
+    p.l--;
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.s, 0, 6.28);
     ctx.fillStyle = `rgba(128,0,255,${Math.random() * 0.5})`;
