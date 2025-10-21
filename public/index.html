@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Shadow Chat — Profile</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>🕶️ Shadow Chat — Profile</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <canvas id="fireworkCanvas"></canvas>
@@ -13,15 +13,14 @@
   <div id="startScreen">
     <div class="intro-box">
       <h1 class="intro-title">🕶️ Welcome to <span>Shadow Chat</span></h1>
-      <p class="intro-sub">Your identity in the shadows begins here.</p>
+      <p class="intro-sub">Your journey begins in the neon void.</p>
       <button id="enterBtn">Enter the Shadows</button>
     </div>
   </div>
 
-  <!-- Main App -->
+  <!-- Main UI -->
   <div id="mainApp" style="display:none;">
     <header>🕶️ Shadow Chat</header>
-
     <div class="nav-links">
       <a href="chat.html">💬 Chat</a>
       <a href="call.html">🎥 Call</a>
@@ -30,10 +29,10 @@
     <div class="container">
       <section id="profile">
         <h1>🕶️ Shadow Profile</h1>
-        <p>Your profile data is stored locally.</p>
-        <img id="pfpPreview" src="default_pfp.png" alt="Profile Picture">
-        <input id="username" placeholder="Enter username...">
-        <input id="pfpUrl" placeholder="Enter profile picture URL...">
+        <p>Your data is saved locally (browser only).</p>
+        <img id="pfpPreview" src="default_pfp.png" alt="PFP" />
+        <input id="username" placeholder="Enter username..." />
+        <input id="pfpUrl" placeholder="Profile picture URL..." />
         <button id="saveProfile">💾 Save</button>
         <p id="status"></p>
       </section>
@@ -41,7 +40,6 @@
   </div>
 
   <footer><p>Made by <strong>HitBoyXx23-dev</strong></p></footer>
-
   <script src="script.js"></script>
   <script>
     const start=document.getElementById('startScreen');
