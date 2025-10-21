@@ -6,6 +6,7 @@ body {
   overflow: hidden;
 }
 
+/* Enter Screen */
 .center {
   display: flex;
   flex-direction: column;
@@ -18,60 +19,93 @@ body {
   color: #a020f0;
   font-size: 3em;
   text-shadow: 0 0 20px #8000ff;
-}
-
-#enter-screen input {
-  margin-top: 20px;
-  padding: 10px;
-  width: 200px;
-  background: #111;
-  border: 1px solid #a020f0;
-  color: #fff;
-  border-radius: 8px;
+  text-align: center;
 }
 
 #enter-btn {
-  margin-top: 10px;
+  margin-top: 20px;
   background: linear-gradient(90deg, #4b0082, #8000ff);
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
+  padding: 12px 30px;
+  border-radius: 10px;
   cursor: pointer;
+  font-size: 1.1em;
   box-shadow: 0 0 15px #8000ff;
+  transition: 0.3s;
 }
 
-#chat-container {
+#enter-btn:hover {
+  background: linear-gradient(90deg, #8000ff, #a020f0);
+  box-shadow: 0 0 25px #a020f0;
+}
+
+.hidden { display: none; }
+
+/* App Container */
+#app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
 }
 
-header {
+/* Title */
+#shadowTitle {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2.3em;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 0 20px #8000ff, 0 0 40px #4b0082;
+  z-index: 20;
+  transition: color 0.3s, text-shadow 0.3s;
+  pointer-events: auto;
+}
+
+#shadowTitle:hover {
+  color: #a020f0;
+  text-shadow: 0 0 30px #a020f0, 0 0 60px #8000ff;
+}
+
+/* Tabs */
+#nav-tabs {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: space-around;
   background: rgba(10, 0, 30, 0.8);
-  padding: 10px 20px;
   border-bottom: 1px solid #8000ff;
 }
 
-.profile img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-
-.call-controls button {
+#nav-tabs button {
+  flex: 1;
   background: none;
-  border: 1px solid #a020f0;
   color: white;
-  margin: 0 5px;
-  border-radius: 8px;
-  padding: 5px 10px;
+  border: none;
+  padding: 15px 0;
+  font-size: 1.1em;
   cursor: pointer;
+  transition: 0.3s;
 }
 
+#nav-tabs button.active {
+  background: rgba(128, 0, 255, 0.3);
+  text-shadow: 0 0 10px #a020f0;
+}
+
+.tab {
+  flex: 1;
+  display: none;
+  flex-direction: column;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.tab.active {
+  display: flex;
+}
+
+/* Chat Tab */
 #messages {
   flex: 1;
   overflow-y: auto;
@@ -120,38 +154,56 @@ header {
   cursor: pointer;
 }
 
-video {
+/* Profile Tab */
+#profile-tab {
+  align-items: center;
+  text-align: center;
+}
+
+#profile-tab img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid #8000ff;
+  box-shadow: 0 0 20px #4b0082;
+  margin: 15px 0;
+}
+
+#change-pfp {
+  background: #4b0082;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  padding: 8px 15px;
+  cursor: pointer;
+}
+
+/* Call Tab */
+#call-tab video {
   width: 200px;
   height: 150px;
   border: 2px solid #8000ff;
   border-radius: 10px;
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
+  margin: 10px auto;
   display: none;
 }
 
-.hidden { display: none; }
-
-#shadowTitle {
-  position: fixed;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 2.5em;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.6);
-  text-shadow: 0 0 20px #8000ff, 0 0 40px #4b0082;
-  z-index: 20;
-  transition: color 0.3s, text-shadow 0.3s;
-  pointer-events: auto;
+#call-tab .call-controls {
+  text-align: center;
+  margin-top: 20px;
 }
 
-#shadowTitle:hover {
-  color: #a020f0;
-  text-shadow: 0 0 30px #a020f0, 0 0 60px #8000ff;
+#call-tab button {
+  background: none;
+  border: 1px solid #a020f0;
+  color: white;
+  margin: 5px;
+  border-radius: 8px;
+  padding: 8px 15px;
+  cursor: pointer;
 }
 
+/* Background */
 #bgParticles {
   position: fixed;
   top: 0;
