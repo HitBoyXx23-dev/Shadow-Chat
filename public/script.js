@@ -3,7 +3,8 @@ let username = localStorage.getItem("shadow_username") || "Femboy";
 let pfp = localStorage.getItem("shadow_pfp") || "default_pfp.png";
 localStorage.setItem("shadow_username", username);
 
-let localStream, mediaRecorder;
+let localStream;
+let peers = {}; // peerConnections by socketId
 
 // === Enter ===
 document.getElementById("enter-btn").onclick = () => {
@@ -88,43 +89,66 @@ document.getElementById("save-username").onclick=()=>{
   }
 };
 
-// === Group Call ===
-document.getElementById("group-join-btn").onclick=async()=>{
-  localStream=await navigator.mediaDevices.getUserMedia({audio:true});
-  socket.emit("joinGroup");
-  const ctx=new AudioContext();
-  const src=ctx.createMediaStreamSource(localStream);
-  const dest=ctx.createMediaStreamDestination();
-  src.connect(dest);
-  mediaRecorder=new MediaRecorder(dest.stream);
-  mediaRecorder.ondataavailable=(e)=>{
-    if(e.data.size>0)socket.emit("groupAudio",e.data);
+// === WebRTC Group Audio ===
+async function createPeerConnection(id) {
+  const pc = new RTCPeerConnection();
+  peers[id] = pc;
+  localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+  pc.ontrack = e => { const a = new Audio(); a.srcObject = e.streams[0]; a.play(); };
+  pc.onicecandidate = e => {
+    if (e.candidate) socket.emit("candidate", { candidate: e.candidate, to: id });
   };
-  mediaRecorder.start(500);
+  return pc;
+}
+
+document.getElementById("joinCall").onclick = async () => {
+  localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  socket.emit("joinGroup");
 };
-socket.on("groupAudio",(data)=>{
-  const blob=new Blob([data],{type:"audio/webm"});
-  const url=URL.createObjectURL(blob);
-  new Audio(url).play();
+
+socket.on("user-joined", async id => {
+  const pc = await createPeerConnection(id);
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  socket.emit("offer", { offer, to: id });
 });
-document.getElementById("group-leave-btn").onclick=()=>{
+
+socket.on("offer", async ({ offer, from }) => {
+  const pc = await createPeerConnection(from);
+  await pc.setRemoteDescription(new RTCSessionDescription(offer));
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  socket.emit("answer", { answer, to: from });
+});
+
+socket.on("answer", async ({ answer, from }) => {
+  await peers[from]?.setRemoteDescription(new RTCSessionDescription(answer));
+});
+
+socket.on("candidate", async ({ candidate, from }) => {
+  if (peers[from]) await peers[from].addIceCandidate(new RTCIceCandidate(candidate));
+});
+
+socket.on("user-left", id => {
+  if (peers[id]) {
+    peers[id].close();
+    delete peers[id];
+  }
+});
+
+document.getElementById("leaveCall").onclick = () => {
   socket.emit("leaveGroup");
-  if(mediaRecorder)mediaRecorder.stop();
-  if(localStream)localStream.getTracks().forEach(t=>t.stop());
+  Object.values(peers).forEach(pc => pc.close());
+  peers = {};
+  if (localStream) localStream.getTracks().forEach(t => t.stop());
 };
 
 // === Background Particles ===
 const c=document.getElementById("bgParticles"),ctx=c.getContext("2d");
 function resize(){c.width=innerWidth;c.height=innerHeight;}resize();window.onresize=resize;
-let parts=[];
-function add(){parts.push({x:Math.random()*c.width,y:0,v:Math.random()*2+1,s:Math.random()*2+1,l:200});}
-function loop(){
-  ctx.clearRect(0,0,c.width,c.height);
-  parts.forEach((p,i)=>{p.y+=p.v;p.l--;
-    ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,6.28);
-    ctx.fillStyle=`rgba(128,0,255,${Math.random()*0.5})`;ctx.fill();
-    if(p.l<=0||p.y>c.height)parts.splice(i,1);
-  });
-  requestAnimationFrame(loop);
-}
+let parts=[];function add(){parts.push({x:Math.random()*c.width,y:0,v:Math.random()*2+1,s:Math.random()*2+1,l:200});}
+function loop(){ctx.clearRect(0,0,c.width,c.height);parts.forEach((p,i)=>{p.y+=p.v;p.l--;
+ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,6.28);
+ctx.fillStyle=`rgba(128,0,255,${Math.random()*0.5})`;ctx.fill();
+if(p.l<=0||p.y>c.height)parts.splice(i,1);});requestAnimationFrame(loop);}
 setInterval(add,100);loop();
