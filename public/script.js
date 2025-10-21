@@ -14,6 +14,17 @@ let privateMuted = false;
 let privateSharing = false;
 let privateScreen = null;
 
+// === AUDIO UNLOCK (mobile) ===
+document.body.addEventListener(
+  "click",
+  () => {
+    const a = new Audio();
+    a.muted = true;
+    a.play().catch(() => {});
+  },
+  { once: true }
+);
+
 // === BANNER SYSTEM ===
 const banner = document.getElementById("banner");
 function showBanner(msg, color = "#8000ff") {
@@ -33,12 +44,18 @@ document.getElementById("enter-btn").onclick = () => {
 };
 
 // === TABS ===
-document.querySelectorAll("#nav-tabs button").forEach(btn => {
+document.querySelectorAll("#nav-tabs button").forEach((btn) => {
   btn.addEventListener("click", () => {
-    document.querySelectorAll("#nav-tabs button").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document
+      .querySelectorAll("#nav-tabs button")
+      .forEach((b) => b.classList.remove("active"));
+    document
+      .querySelectorAll(".tab")
+      .forEach((t) => t.classList.remove("active"));
     btn.classList.add("active");
-    document.getElementById(`${btn.dataset.tab}-tab`).classList.add("active");
+    document
+      .getElementById(`${btn.dataset.tab}-tab`)
+      .classList.add("active");
   });
 });
 
@@ -47,22 +64,25 @@ const userList = document.getElementById("user-list");
 const userCount = document.getElementById("user-count");
 const privateUserList = document.getElementById("private-user-list");
 
-socket.on("userList", users => {
-  userList.innerHTML = users.map(u => `<li>${u}</li>`).join("");
+socket.on("userList", (users) => {
+  userList.innerHTML = users.map((u) => `<li>${u}</li>`).join("");
   userCount.textContent = `Active: ${users.length}`;
 
   privateUserList.innerHTML = users
-    .filter(u => u !== username)
-    .map(u => `<li>${u} <button class="privateCallBtn" data-user="${u}">📞 Call</button></li>`)
+    .filter((u) => u !== username)
+    .map(
+      (u) =>
+        `<li>${u} <button class="privateCallBtn" data-user="${u}">📞 Call</button></li>`
+    )
     .join("");
 
-  document.querySelectorAll(".privateCallBtn").forEach(btn => {
+  document.querySelectorAll(".privateCallBtn").forEach((btn) => {
     btn.onclick = () => startPrivateCall(btn.dataset.user);
   });
 });
 
 // === CHAT ===
-socket.on("chatHistory", msgs => msgs.forEach(addMsg));
+socket.on("chatHistory", (msgs) => msgs.forEach(addMsg));
 socket.on("chatMessage", addMsg);
 
 document.getElementById("send-btn").onclick = sendMsg;
@@ -99,7 +119,7 @@ fileInput.onchange = async () => {
     user: username,
     pfp,
     text: `<img src="${data.data}" style="max-width:250px;border-radius:6px;">`,
-    time: Date.now()
+    time: Date.now(),
   };
   socket.emit("chatMessage", msg);
   fileInput.value = "";
@@ -107,7 +127,8 @@ fileInput.onchange = async () => {
 
 // === PROFILE ===
 const pfpEl = document.getElementById("pfp");
-document.getElementById("change-pfp").onclick = () => document.getElementById("pfp-upload").click();
+document.getElementById("change-pfp").onclick = () =>
+  document.getElementById("pfp-upload").click();
 document.getElementById("pfp-upload").onchange = () => {
   const f = document.getElementById("pfp-upload").files[0];
   if (!f) return;
@@ -129,18 +150,40 @@ document.getElementById("save-username").onclick = () => {
   }
 };
 
-// === GROUP CALL FUNCTIONS ===
+// === GROUP CALL ===
 async function createPeerConnection(id) {
   const pc = new RTCPeerConnection();
   peers[id] = pc;
-  localStream?.getTracks().forEach(track => pc.addTrack(track, localStream));
-  pc.ontrack = e => {
-    const a = new Audio();
-    a.srcObject = e.streams[0];
-    a.autoplay = true;
+
+  localStream?.getTracks().forEach((track) => pc.addTrack(track, localStream));
+
+  pc.ontrack = (e) => {
+    const stream = e.streams[0];
+    if (stream.getVideoTracks().length) {
+      const v = document.createElement("video");
+      v.srcObject = stream;
+      v.autoplay = true;
+      v.playsInline = true;
+      v.style.width = "80%";
+      v.style.border = "2px solid #8000ff";
+      v.style.borderRadius = "10px";
+      document.getElementById("remote-videos").appendChild(v);
+      stream.getTracks().forEach(
+        (t) =>
+          (t.onended = () => {
+            if (v.srcObject === stream) v.remove();
+          })
+      );
+    } else {
+      const a = new Audio();
+      a.srcObject = stream;
+      a.autoplay = true;
+    }
   };
-  pc.onicecandidate = e => {
-    if (e.candidate) socket.emit("candidate", { candidate: e.candidate, to: id });
+
+  pc.onicecandidate = (e) => {
+    if (e.candidate)
+      socket.emit("candidate", { candidate: e.candidate, to: id });
   };
   return pc;
 }
@@ -157,9 +200,9 @@ document.getElementById("joinCall").onclick = async () => {
 
 document.getElementById("leaveCall").onclick = () => {
   socket.emit("leaveGroup");
-  Object.values(peers).forEach(pc => pc.close());
+  Object.values(peers).forEach((pc) => pc.close());
   peers = {};
-  if (localStream) localStream.getTracks().forEach(t => t.stop());
+  if (localStream) localStream.getTracks().forEach((t) => t.stop());
   stopScreenShare();
   showBanner("❌ Left group call", "#a020f0");
 };
@@ -167,23 +210,28 @@ document.getElementById("leaveCall").onclick = () => {
 document.getElementById("muteMic").onclick = () => {
   if (!localStream) return showBanner("⚠️ Not in call");
   isMuted = !isMuted;
-  localStream.getAudioTracks().forEach(track => (track.enabled = !isMuted));
-  document.getElementById("muteMic").textContent = isMuted ? "🔇 Unmute Mic" : "🎤 Mute Mic";
+  localStream.getAudioTracks().forEach((track) => (track.enabled = !isMuted));
+  document.getElementById("muteMic").textContent = isMuted
+    ? "🔇 Unmute"
+    : "🎤 Mute";
   showBanner(isMuted ? "🎙️ Mic muted" : "🎤 Mic unmuted", "#8000ff");
 };
 
+// === Screen share ===
 const shareBtn = document.getElementById("shareScreen");
 shareBtn.onclick = async () => {
   if (isSharing) return stopScreenShare();
 
   try {
-    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+    screenStream = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+      audio: true,
+    });
     isSharing = true;
     showBanner("🖥️ Started screen share", "#a020f0");
 
-    for (const id in peers) {
-      screenStream.getTracks().forEach(track => peers[id].addTrack(track, screenStream));
-    }
+    for (const id in peers)
+      screenStream.getTracks().forEach((track) => peers[id].addTrack(track));
 
     const preview = document.getElementById("screen-preview");
     preview.innerHTML = "";
@@ -191,12 +239,13 @@ shareBtn.onclick = async () => {
     video.srcObject = screenStream;
     video.autoplay = true;
     video.muted = true;
+    video.playsInline = true;
     video.style.width = "80%";
     video.style.border = "2px solid #8000ff";
     video.style.borderRadius = "10px";
     preview.appendChild(video);
 
-    screenStream.getTracks().forEach(track => (track.onended = stopScreenShare));
+    screenStream.getTracks().forEach((track) => (track.onended = stopScreenShare));
     shareBtn.textContent = "🛑 Stop Sharing";
   } catch {
     showBanner("❌ Screen share cancelled", "crimson");
@@ -205,7 +254,7 @@ shareBtn.onclick = async () => {
 
 function stopScreenShare() {
   if (!isSharing || !screenStream) return;
-  screenStream.getTracks().forEach(t => t.stop());
+  screenStream.getTracks().forEach((t) => t.stop());
   screenStream = null;
   isSharing = false;
   document.getElementById("screen-preview").innerHTML = "";
@@ -213,22 +262,42 @@ function stopScreenShare() {
   showBanner("🛑 Stopped screen share", "#4b0082");
 }
 
-// === PRIVATE 1-ON-1 CALL ===
+// === PRIVATE 1-on-1 CALL ===
 async function startPrivateCall(targetName) {
   if (privatePC) return showBanner("⚠️ Already in a private call", "orange");
-
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     privateTarget = targetName;
     privatePC = new RTCPeerConnection();
-    localStream.getTracks().forEach(track => privatePC.addTrack(track, localStream));
-    privatePC.ontrack = e => {
-      const a = new Audio();
-      a.srcObject = e.streams[0];
-      a.autoplay = true;
+    localStream.getTracks().forEach((t) => privatePC.addTrack(t, localStream));
+
+    privatePC.ontrack = (e) => {
+      const stream = e.streams[0];
+      if (stream.getVideoTracks().length) {
+        const v = document.createElement("video");
+        v.srcObject = stream;
+        v.autoplay = true;
+        v.playsInline = true;
+        v.style.width = "80%";
+        v.style.border = "2px solid #8000ff";
+        v.style.borderRadius = "10px";
+        document.getElementById("private-remote").appendChild(v);
+        stream.getTracks().forEach(
+          (t) =>
+            (t.onended = () => {
+              if (v.srcObject === stream) v.remove();
+            })
+        );
+      } else {
+        const a = new Audio();
+        a.srcObject = stream;
+        a.autoplay = true;
+      }
     };
-    privatePC.onicecandidate = e => {
-      if (e.candidate) socket.emit("privateCandidate", { candidate: e.candidate, to: targetName });
+
+    privatePC.onicecandidate = (e) => {
+      if (e.candidate)
+        socket.emit("privateCandidate", { candidate: e.candidate, to: targetName });
     };
 
     const offer = await privatePC.createOffer();
@@ -240,7 +309,7 @@ async function startPrivateCall(targetName) {
   }
 }
 
-// === HANDLE INCOMING PRIVATE CALL ===
+// === Incoming call ===
 socket.on("privateOffer", async ({ offer, from }) => {
   const popup = document.getElementById("call-popup");
   const callerName = document.getElementById("caller-name");
@@ -252,14 +321,29 @@ socket.on("privateOffer", async ({ offer, from }) => {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     privateTarget = from;
     privatePC = new RTCPeerConnection();
-    localStream.getTracks().forEach(track => privatePC.addTrack(track, localStream));
-    privatePC.ontrack = e => {
-      const a = new Audio();
-      a.srcObject = e.streams[0];
-      a.autoplay = true;
+    localStream.getTracks().forEach((t) => privatePC.addTrack(t, localStream));
+
+    privatePC.ontrack = (e) => {
+      const stream = e.streams[0];
+      if (stream.getVideoTracks().length) {
+        const v = document.createElement("video");
+        v.srcObject = stream;
+        v.autoplay = true;
+        v.playsInline = true;
+        v.style.width = "80%";
+        v.style.border = "2px solid #8000ff";
+        v.style.borderRadius = "10px";
+        document.getElementById("private-remote").appendChild(v);
+      } else {
+        const a = new Audio();
+        a.srcObject = stream;
+        a.autoplay = true;
+      }
     };
-    privatePC.onicecandidate = e => {
-      if (e.candidate) socket.emit("privateCandidate", { candidate: e.candidate, to: from });
+
+    privatePC.onicecandidate = (e) => {
+      if (e.candidate)
+        socket.emit("privateCandidate", { candidate: e.candidate, to: from });
     };
     await privatePC.setRemoteDescription(new RTCSessionDescription(offer));
     const answer = await privatePC.createAnswer();
@@ -282,26 +366,33 @@ socket.on("privateAnswer", async ({ answer }) => {
 });
 
 socket.on("privateCandidate", async ({ candidate }) => {
-  if (privatePC) await privatePC.addIceCandidate(new RTCIceCandidate(candidate));
+  if (privatePC)
+    await privatePC.addIceCandidate(new RTCIceCandidate(candidate));
 });
 
 // === PRIVATE CONTROLS ===
 document.getElementById("mutePrivate").onclick = () => {
   if (!localStream) return showBanner("⚠️ Not in private call");
   privateMuted = !privateMuted;
-  localStream.getAudioTracks().forEach(track => (track.enabled = !privateMuted));
-  document.getElementById("mutePrivate").textContent = privateMuted ? "🔇 Unmute" : "🎤 Mute";
-  showBanner(privateMuted ? "🎙️ Mic Muted" : "🎤 Mic Unmuted", "#a020f0");
+  localStream.getAudioTracks().forEach((t) => (t.enabled = !privateMuted));
+  document.getElementById("mutePrivate").textContent = privateMuted
+    ? "🔇 Unmute"
+    : "🎤 Mute";
+  showBanner(privateMuted ? "🎙️ Mic muted" : "🎤 Mic unmuted", "#a020f0");
 };
 
 document.getElementById("sharePrivate").onclick = async () => {
   if (privateSharing) return stopPrivateShare();
-
   try {
-    privateScreen = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+    privateScreen = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+      audio: true,
+    });
     privateSharing = true;
-    privateScreen.getTracks().forEach(track => privatePC.addTrack(track, privateScreen));
-    privateScreen.getTracks().forEach(t => (t.onended = stopPrivateShare));
+    privateScreen
+      .getTracks()
+      .forEach((track) => privatePC.addTrack(track, privateScreen));
+    privateScreen.getTracks().forEach((t) => (t.onended = stopPrivateShare));
     document.getElementById("sharePrivate").textContent = "🛑 Stop Share";
     showBanner("🖥️ Sharing screen", "#4b0082");
 
@@ -322,7 +413,7 @@ document.getElementById("sharePrivate").onclick = async () => {
 
 function stopPrivateShare() {
   if (!privateSharing || !privateScreen) return;
-  privateScreen.getTracks().forEach(t => t.stop());
+  privateScreen.getTracks().forEach((t) => t.stop());
   privateScreen = null;
   privateSharing = false;
   document.getElementById("sharePrivate").textContent = "🖥️ Share Screen";
@@ -342,7 +433,7 @@ document.getElementById("endPrivateCall").onclick = () => {
 };
 
 // === SIGNALING ===
-socket.on("user-joined", async id => {
+socket.on("user-joined", async (id) => {
   const pc = await createPeerConnection(id);
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
@@ -362,10 +453,11 @@ socket.on("answer", async ({ answer, from }) => {
 });
 
 socket.on("candidate", async ({ candidate, from }) => {
-  if (peers[from]) await peers[from].addIceCandidate(new RTCIceCandidate(candidate));
+  if (peers[from])
+    await peers[from].addIceCandidate(new RTCIceCandidate(candidate));
 });
 
-socket.on("user-left", id => {
+socket.on("user-left", (id) => {
   if (peers[id]) {
     peers[id].close();
     delete peers[id];
@@ -381,13 +473,31 @@ messageInput.addEventListener("focus", () => {
 });
 
 // === PARTICLE BACKGROUND ===
-const c = document.getElementById("bgParticles"), ctx = c.getContext("2d");
-function resize() { c.width = innerWidth; c.height = innerHeight; }
+const c = document.getElementById("bgParticles"),
+  ctx = c.getContext("2d");
+function resize() {
+  c.width = innerWidth;
+  c.height = innerHeight;
+}
 resize();
 window.onresize = resize;
 
 let parts = [];
-function add() { parts.push({ x: Math.random() * c.width, y: 0, v: Math.random() * 2 + 1, s: Math.random() * 2 + 1, l: 200 }); }
+function add() {
+  parts.push({
+    x: Math.randomOops — the end of that script got cut off. Here’s the **rest of the file (the particle animation section)** to complete your `script.js`:  
+
+```js
+function add() {
+  parts.push({
+    x: Math.random() * c.width,
+    y: 0,
+    v: Math.random() * 2 + 1,
+    s: Math.random() * 2 + 1,
+    l: 200,
+  });
+}
+
 function loop() {
   ctx.clearRect(0, 0, c.width, c.height);
   parts.forEach((p, i) => {
@@ -401,5 +511,6 @@ function loop() {
   });
   requestAnimationFrame(loop);
 }
+
 setInterval(add, 100);
 loop();
