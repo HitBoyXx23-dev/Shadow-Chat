@@ -2,12 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🕶️ Shadow Chat</title>
   <link rel="stylesheet" href="style.css" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
 <body>
   <canvas id="bgParticles"></canvas>
+
+  <!-- Notification Banner -->
+  <div id="banner"></div>
 
   <!-- === ENTRY SCREEN === -->
   <div id="enter-screen" class="center">
@@ -35,7 +38,6 @@
     <!-- === CHAT TAB === -->
     <section id="chat-tab" class="tab active">
       <div id="messages"></div>
-
       <div id="input-area">
         <input type="file" id="file-input" hidden />
         <button id="file-btn">📎</button>
@@ -50,7 +52,6 @@
       <img id="pfp" src="default_pfp.png" alt="Profile Picture" />
       <input type="file" id="pfp-upload" accept="image/*" hidden />
       <button id="change-pfp">Change Picture</button>
-
       <p><strong>Username:</strong> <span id="profile-name"></span></p>
       <input type="text" id="edit-username" placeholder="Change username..." />
       <button id="save-username">Save Username</button>
@@ -62,6 +63,7 @@
       <div class="call-controls">
         <button id="joinCall">🎙️ Join Call</button>
         <button id="leaveCall">❌ Leave Call</button>
+        <button id="muteMic">🎤 Mute Mic</button>
         <button id="shareScreen">🖥️ Share Screen</button>
       </div>
       <div id="screen-preview"></div>
