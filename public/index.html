@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>🕶️ Shadow Chat</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <canvas id="bgParticles"></canvas>
@@ -28,34 +28,31 @@
       <button data-tab="call">🎙️ Call</button>
     </nav>
 
-    <!-- Chat Tab -->
     <section id="chat-tab" class="tab active">
       <div id="messages"></div>
       <div id="input-area">
-        <input type="file" id="file-input" hidden>
+        <input type="file" id="file-input" hidden />
         <button id="file-btn">📎</button>
-        <input type="text" id="message-input" placeholder="Type your message...">
+        <input type="text" id="message-input" placeholder="Type your message..." />
         <button id="send-btn">Send</button>
       </div>
     </section>
 
-    <!-- Profile Tab -->
     <section id="profile-tab" class="tab">
       <h2>Your Profile</h2>
       <img id="pfp" src="default_pfp.png" alt="Profile Picture" />
       <input type="file" id="pfp-upload" accept="image/*" hidden />
       <button id="change-pfp">Change Picture</button>
       <p><strong>Username:</strong> <span id="profile-name"></span></p>
-      <input type="text" id="edit-username" placeholder="Change username...">
+      <input type="text" id="edit-username" placeholder="Change username..." />
       <button id="save-username">Save Username</button>
     </section>
 
-    <!-- Call Tab -->
     <section id="call-tab" class="tab">
       <h2>Group Voice Call</h2>
       <div class="call-controls">
-        <button id="group-join-btn">Join Call</button>
-        <button id="group-leave-btn">Leave Call</button>
+        <button id="joinCall">Join Call</button>
+        <button id="leaveCall">Leave Call</button>
       </div>
     </section>
   </div>
