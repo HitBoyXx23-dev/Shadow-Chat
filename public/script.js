@@ -40,64 +40,61 @@ socket.on("chatMessage", addMsg);
 const inputArea = document.getElementById("input-area");
 const msgBox = document.getElementById("messages");
 
-// Send button
 document.getElementById("send-btn").onclick = sendMsg;
 
 function sendMsg() {
-  const text = document.getElementById("message-input").value.trim();
+  const textInput = document.getElementById("message-input");
+  const text = textInput.value.trim();
   if (!text) return;
 
-  // URL auto-embed
-  let rendered = text;
+  const rendered = renderMessageText(text);
+  const msg = { user: username, pfp, text: rendered, time: Date.now() };
+  socket.emit("chatMessage", msg);
+  textInput.value = "";
+}
+
+function renderMessageText(text) {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-  rendered = rendered.replace(urlRegex, (url) => {
+  return text.replace(urlRegex, (url) => {
     const lower = url.toLowerCase();
-    if (lower.endsWith(".mp3") || lower.endsWith(".wav") || lower.endsWith(".ogg")) {
-      return `<audio controls src="${url}" style="width:100%;"></audio>`;
-    } else if (lower.endsWith(".mp4") || lower.endsWith(".webm") || lower.endsWith(".mov")) {
-      return `<video controls src="${url}" style="max-width:100%;border-radius:8px;"></video>`;
+    if (/\.(mp3|wav|ogg)$/i.test(lower)) {
+      return `<audio controls src="${url}" style="width:100%;margin-top:5px;"></audio>`;
+    } else if (/\.(mp4|webm|mov)$/i.test(lower)) {
+      return `<video controls src="${url}" style="max-width:100%;margin-top:5px;border-radius:8px;"></video>`;
     } else if (/\.(jpg|jpeg|png|gif|webp)$/i.test(lower)) {
-      return `<img src="${url}" style="max-width:100%;border-radius:6px;">`;
+      return `<img src="${url}" style="max-width:100%;margin-top:5px;border-radius:6px;">`;
     } else {
       return `<a href="${url}" target="_blank" style="color:#a020f0;">${url}</a>`;
     }
   });
-
-  const msg = { user: username, pfp, text: rendered, time: Date.now() };
-  socket.emit("chatMessage", msg);
-  document.getElementById("message-input").value = "";
 }
 
 function addMsg({ user, pfp, text }) {
   const div = document.createElement("div");
   div.classList.add("message");
   if (user === username) div.classList.add("self");
-  div.innerHTML = `<img src="${pfp}" class="pfp"><div class="text"><b>${user}:</b><br>${text}</div>`;
+  div.innerHTML = `<img src="${pfp}" class="pfp"><div class="text"><b>${user}:</b><br></div>`;
+  const textDiv = div.querySelector(".text");
+  textDiv.insertAdjacentHTML("beforeend", text); // ✅ insert HTML safely
   msgBox.appendChild(div);
   msgBox.scrollTop = msgBox.scrollHeight;
   hideInputIfOverflow();
 }
 
-// Hide input when chat very full
+// === Hide input on overflow ===
 function hideInputIfOverflow() {
   const totalMessages = msgBox.children.length;
-  if (totalMessages > 25) {
-    inputArea.classList.add("hidden");
-  } else {
-    inputArea.classList.remove("hidden");
-  }
+  if (totalMessages > 25) inputArea.classList.add("hidden");
+  else inputArea.classList.remove("hidden");
 }
 
-// Auto-hide when scrolling up
 msgBox.addEventListener("scroll", () => {
-  if (msgBox.scrollTop + msgBox.clientHeight < msgBox.scrollHeight - 100) {
+  if (msgBox.scrollTop + msgBox.clientHeight < msgBox.scrollHeight - 100)
     inputArea.classList.add("hidden");
-  } else {
-    inputArea.classList.remove("hidden");
-  }
+  else inputArea.classList.remove("hidden");
 });
 
-// === File Upload (Base64 client-side, supports audio/video/images) ===
+// === File Upload (Base64) ===
 const fileInput = document.getElementById("file-input");
 document.getElementById("file-btn").onclick = () => fileInput.click();
 
@@ -111,9 +108,9 @@ fileInput.onchange = async () => {
     const data = reader.result;
 
     if (file.type.startsWith("video/")) {
-      html = `<video src="${data}" controls style="max-width:100%;border-radius:8px;"></video>`;
+      html = `<video controls src="${data}" style="max-width:100%;border-radius:8px;"></video>`;
     } else if (file.type.startsWith("audio/")) {
-      html = `<audio src="${data}" controls style="width:100%;"></audio>`;
+      html = `<audio controls src="${data}" style="width:100%;"></audio>`;
     } else if (file.type.startsWith("image/")) {
       html = `<img src="${data}" style="max-width:100%;border-radius:6px;">`;
     } else {
