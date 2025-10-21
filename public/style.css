@@ -102,3 +102,11 @@ body {
   #messages { height: calc(100vh - 230px); font-size: 0.9em; }
   #input-area input { font-size: 0.9em; }
 }
+
+video, audio {
+  margin-top: 5px;
+  border: 1px solid #8000ff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(128, 0, 255, 0.3);
+}
+
