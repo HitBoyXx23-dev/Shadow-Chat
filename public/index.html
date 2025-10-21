@@ -41,11 +41,11 @@
     <nav id="nav-tabs">
       <button data-tab="chat" class="active">💬 Chat</button>
       <button data-tab="profile">👤 Profile</button>
-      <button data-tab="call">🎙️ Group</button>
+      <button data-tab="group">🎙️ Group</button>
       <button data-tab="private">📞 1-on-1</button>
     </nav>
 
-    <!-- Chat -->
+    <!-- Chat Tab -->
     <section id="chat-tab" class="tab active">
       <div id="messages"></div>
       <div id="input-area">
@@ -56,7 +56,7 @@
       </div>
     </section>
 
-    <!-- Profile -->
+    <!-- Profile Tab -->
     <section id="profile-tab" class="tab">
       <h2>Your Profile</h2>
       <img id="pfp" src="default_pfp.png" alt="Profile Picture" />
@@ -67,8 +67,8 @@
       <button id="save-username">Save Username</button>
     </section>
 
-    <!-- Group Call -->
-    <section id="call-tab" class="tab">
+    <!-- Group Call Tab -->
+    <section id="group-tab" class="tab">
       <h2>Group Call with Screen Share</h2>
       <div class="call-controls">
         <button id="joinCall">🎙️ Join</button>
@@ -77,19 +77,20 @@
         <button id="shareScreen">🖥️ Share</button>
       </div>
       <div id="screen-preview"></div>
+      <div id="remote-videos"></div>
     </section>
 
-    <!-- Private 1-on-1 -->
+    <!-- Private Call Tab -->
     <section id="private-tab" class="tab">
       <h2>Private 1-on-1 Call</h2>
       <ul id="private-user-list"></ul>
-
       <div class="call-controls">
         <button id="mutePrivate">🎤 Mute</button>
         <button id="sharePrivate">🖥️ Share</button>
         <button id="endPrivateCall" class="hidden">❌ End</button>
       </div>
       <div id="private-preview"></div>
+      <div id="private-remote"></div>
     </section>
   </div>
 
