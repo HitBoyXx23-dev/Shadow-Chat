@@ -315,3 +315,19 @@ body {
     font-size: 0.9em;
   }
 }
+/* === FLOATING BANNER === */
+#banner {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #8000ff;
+  color: white;
+  padding: 10px 25px;
+  border-radius: 10px;
+  font-size: 1em;
+  box-shadow: 0 0 15px #8000ff;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 9999;
+}
