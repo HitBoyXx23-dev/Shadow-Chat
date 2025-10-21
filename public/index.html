@@ -7,38 +7,56 @@
 </head>
 <body>
   <canvas id="bgParticles"></canvas>
-  <h1 id="shadowTitle">🕶️ Shadow Chat</h1>
 
+  <!-- Enter Screen -->
   <div id="enter-screen" class="center">
     <h1 class="title">💜 Enter the Shadows 💜</h1>
-    <input type="text" id="username" placeholder="Enter your name" />
     <button id="enter-btn">Enter</button>
   </div>
 
-  <div id="chat-container" class="hidden">
-    <header>
-      <div class="profile">
-        <img id="pfp" src="default-pfp.png" alt="PFP" />
-        <h2 id="userDisplay"></h2>
+  <!-- Main Shadow Chat -->
+  <div id="app-container" class="hidden">
+    <h1 id="shadowTitle">🕶️ Shadow Chat</h1>
+
+    <nav id="nav-tabs">
+      <button data-tab="chat" class="active">💬 Chat</button>
+      <button data-tab="profile">👤 Profile</button>
+      <button data-tab="call">🎙️ Call</button>
+    </nav>
+
+    <!-- Chat Tab -->
+    <section id="chat-tab" class="tab active">
+      <div id="messages"></div>
+      <div id="input-area">
+        <input type="file" id="file-input" hidden />
+        <button id="file-btn">📎</button>
+        <input type="text" id="message-input" placeholder="Type your message..." />
+        <button id="send-btn">Send</button>
       </div>
+    </section>
+
+    <!-- Profile Tab -->
+    <section id="profile-tab" class="tab">
+      <h2>Your Profile</h2>
+      <img id="pfp" src="default-pfp.png" alt="Profile Picture" />
+      <input type="file" id="pfp-upload" accept="image/*" hidden />
+      <button id="change-pfp">Change Picture</button>
+      <p><strong>Username:</strong> <span id="profile-name"></span></p>
+      <input type="text" id="edit-username" placeholder="Change username..." />
+      <button id="save-username">Save Username</button>
+    </section>
+
+    <!-- Call Tab -->
+    <section id="call-tab" class="tab">
+      <h2>Voice Calls</h2>
       <div class="call-controls">
-        <button id="call-btn">Call</button>
+        <button id="call-btn">Start 1-on-1 Call</button>
         <button id="group-call-btn">Join Group Call</button>
         <button id="end-call-btn">End Call</button>
       </div>
-    </header>
-
-    <div id="messages"></div>
-
-    <div id="input-area">
-      <input type="file" id="file-input" hidden />
-      <button id="file-btn">📎</button>
-      <input type="text" id="message-input" placeholder="Type your message..." />
-      <button id="send-btn">Send</button>
-    </div>
-
-    <video id="localVideo" autoplay muted playsinline></video>
-    <video id="remoteVideo" autoplay playsinline></video>
+      <video id="localVideo" autoplay muted playsinline></video>
+      <video id="remoteVideo" autoplay playsinline></video>
+    </section>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
