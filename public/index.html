@@ -16,7 +16,13 @@
 
   <!-- Main Shadow Chat -->
   <div id="app-container" class="hidden">
-    <h1 id="shadowTitle">🕶️ Shadow Chat</h1>
+    <header id="app-header">
+      <h1 id="shadowTitle">🕶️ Shadow Chat</h1>
+      <div id="online-users">
+        <h3>Active Users</h3>
+        <ul id="user-list"></ul>
+      </div>
+    </header>
 
     <nav id="nav-tabs">
       <button data-tab="chat" class="active">💬 Chat</button>
@@ -48,14 +54,11 @@
 
     <!-- Call Tab -->
     <section id="call-tab" class="tab">
-      <h2>Voice Calls</h2>
-      <div class="call-controls">
-        <button id="call-btn">Start 1-on-1 Call</button>
-        <button id="group-call-btn">Join Group Call</button>
-        <button id="end-call-btn">End Call</button>
-      </div>
+      <h2>Voice Call Area</h2>
+      <p>Select someone from the right to start a call.</p>
       <video id="localVideo" autoplay muted playsinline></video>
       <video id="remoteVideo" autoplay playsinline></video>
+      <button id="end-call-btn">End Call</button>
     </section>
   </div>
 
