@@ -1,17 +1,16 @@
 const socket = io();
-
 let username = localStorage.getItem("shadow_username") || "Femboy";
 localStorage.setItem("shadow_username", username);
 
 let peerConnection;
 let localStream;
-
-document.getElementById("profile-name").textContent = username;
+let isGroup = false;
 
 // Enter
 document.getElementById("enter-btn").onclick = () => {
   document.getElementById("enter-screen").classList.add("hidden");
   document.getElementById("app-container").classList.remove("hidden");
+  document.getElementById("profile-name").textContent = username;
   socket.emit("register", username);
 };
 
@@ -27,30 +26,29 @@ navButtons.forEach(btn => {
   });
 });
 
-// User List
-const userListEl = document.getElementById("user-list");
-socket.on("userList", (users) => {
-  userListEl.innerHTML = "";
-  users.forEach(name => {
-    if (name === username) return;
+// Active Users
+const userList = document.getElementById("user-list");
+socket.on("userList", users => {
+  userList.innerHTML = "";
+  users.forEach(u => {
+    if (u === username) return;
     const li = document.createElement("li");
-    li.textContent = name;
-    li.onclick = () => startCall(name);
-    userListEl.appendChild(li);
+    li.textContent = u;
+    li.onclick = () => startPrivateCall(u);
+    userList.appendChild(li);
   });
 });
 
 // Chat
-socket.on("chatHistory", (h) => h.forEach(addMessage));
+socket.on("chatHistory", msgs => msgs.forEach(addMsg));
 document.getElementById("send-btn").onclick = () => {
-  const msg = document.getElementById("message-input").value.trim();
-  if (!msg) return;
-  socket.emit("chatMessage", { user: username, text: msg, time: Date.now() });
+  const text = document.getElementById("message-input").value.trim();
+  if (!text) return;
+  socket.emit("chatMessage", { user: username, text, time: Date.now() });
   document.getElementById("message-input").value = "";
 };
-socket.on("chatMessage", addMessage);
-
-function addMessage({ user, text }) {
+socket.on("chatMessage", addMsg);
+function addMsg({ user, text }) {
   const div = document.createElement("div");
   div.classList.add("message");
   if (user === username) div.classList.add("self");
@@ -60,79 +58,45 @@ function addMessage({ user, text }) {
     document.getElementById("messages").scrollHeight;
 }
 
-// File Upload
-document.getElementById("file-btn").onclick = () => fileInput.click();
-const fileInput = document.getElementById("file-input");
-fileInput.onchange = async () => {
-  const file = fileInput.files[0];
-  if (!file) return;
-  const formData = new FormData();
-  formData.append("file", file);
-  const res = await fetch("/upload", { method: "POST", body: formData });
-  const data = await res.json();
-  socket.emit("chatMessage", {
-    user: username,
-    text: `<img src="${data.data}" class="uploaded"/>`,
-    time: Date.now(),
-  });
-  fileInput.value = "";
-};
-
-// Profile
-const pfp = document.getElementById("pfp");
-const pfpUpload = document.getElementById("pfp-upload");
-document.getElementById("change-pfp").onclick = () => pfpUpload.click();
-pfpUpload.onchange = () => {
-  const file = pfpUpload.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    pfp.src = reader.result;
-    localStorage.setItem("shadow_pfp", reader.result);
-  };
-  reader.readAsDataURL(file);
-};
-if (localStorage.getItem("shadow_pfp")) pfp.src = localStorage.getItem("shadow_pfp");
-
-document.getElementById("save-username").onclick = () => {
-  const newName = document.getElementById("edit-username").value.trim();
-  if (newName) {
-    username = newName;
-    localStorage.setItem("shadow_username", username);
-    document.getElementById("profile-name").textContent = username;
-    socket.emit("register", username);
-  }
-};
-
-// === WebRTC ===
-async function startCall(targetUser) {
+// === WebRTC Private Call ===
+async function startPrivateCall(target) {
+  isGroup = false;
   localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
   peerConnection = new RTCPeerConnection();
-  localStream.getTracks().forEach((t) => peerConnection.addTrack(t, localStream));
-  peerConnection.onicecandidate = (e) => {
+  localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
+  peerConnection.ontrack = e => showRemote(e.streams[0]);
+  peerConnection.onicecandidate = e => {
     if (e.candidate)
-      socket.emit("iceCandidate", { to: targetUser, candidate: e.candidate });
-  };
-  peerConnection.ontrack = (e) => {
-    document.getElementById("remoteVideo").srcObject = e.streams[0];
-    document.getElementById("remoteVideo").style.display = "block";
+      socket.emit("iceCandidate", { to: target, candidate: e.candidate });
   };
   const offer = await peerConnection.createOffer();
   await peerConnection.setLocalDescription(offer);
-  socket.emit("callUser", { to: targetUser, offer });
+  socket.emit("callUser", { to: target, offer });
 }
 
+// === Group Call ===
+document.getElementById("group-join-btn").onclick = async () => {
+  isGroup = true;
+  localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  document.getElementById("localVideo").srcObject = localStream;
+  document.getElementById("localVideo").style.display = "block";
+  socket.emit("joinGroup", username);
+};
+document.getElementById("group-leave-btn").onclick = () => {
+  socket.emit("leaveGroup", username);
+  if (localStream) localStream.getTracks().forEach(t => t.stop());
+  document.getElementById("localVideo").style.display = "none";
+};
+
+// Incoming Calls
 socket.on("incomingCall", async ({ from, offer }) => {
   localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
   peerConnection = new RTCPeerConnection();
-  localStream.getTracks().forEach((t) => peerConnection.addTrack(t, localStream));
-  peerConnection.onicecandidate = (e) => {
+  localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
+  peerConnection.ontrack = e => showRemote(e.streams[0]);
+  peerConnection.onicecandidate = e => {
     if (e.candidate)
       socket.emit("iceCandidate", { to: from, candidate: e.candidate });
-  };
-  peerConnection.ontrack = (e) => {
-    document.getElementById("remoteVideo").srcObject = e.streams[0];
-    document.getElementById("remoteVideo").style.display = "block";
   };
   await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
   const answer = await peerConnection.createAnswer();
@@ -143,9 +107,26 @@ socket.on("incomingCall", async ({ from, offer }) => {
 socket.on("callAnswered", async ({ answer }) => {
   await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
 });
+
 socket.on("iceCandidate", ({ candidate }) => {
   if (peerConnection)
     peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+});
+
+function showRemote(stream) {
+  const vid = document.getElementById("remoteVideo");
+  vid.srcObject = stream;
+  vid.style.display = "block";
+}
+
+// Group audio streaming
+socket.on("groupAudio", async ({ id, audioData }) => {
+  if (isGroup) {
+    const blob = new Blob([audioData], { type: "audio/webm" });
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.play();
+  }
 });
 
 // End Call
@@ -157,42 +138,39 @@ document.getElementById("end-call-btn").onclick = () => {
 // Background Particles
 const canvas = document.getElementById("bgParticles");
 const ctx = canvas.getContext("2d");
-let particles = [];
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+let parts = [];
+function resize() {
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
 }
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
-
+window.addEventListener("resize", resize);
+resize();
 class Particle {
-  constructor(x, y, vx, vy, size, life, color) {
-    Object.assign(this, { x, y, vx, vy, size, life, color });
+  constructor(x, y, vx, vy, s, l, c) {
+    Object.assign(this, { x, y, vx, vy, s, l, c });
   }
-  update() { this.x += this.vx; this.y += this.vy; this.life--; }
+  update() { this.x += this.vx; this.y += this.vy; this.l--; }
   draw() {
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fillStyle = this.color;
+    ctx.arc(this.x, this.y, this.s, 0, Math.PI * 2);
+    ctx.fillStyle = this.c;
     ctx.fill();
   }
 }
-
-function addFallingParticles() {
+function add() {
   const x = Math.random() * canvas.width;
   const size = Math.random() * 2 + 1;
   const vy = Math.random() * 2 + 1;
-  const color = `rgba(128,0,255,${Math.random() * 0.5})`;
-  particles.push(new Particle(x, 0, 0, vy, size, 200, color));
+  const c = `rgba(128,0,255,${Math.random() * 0.5})`;
+  parts.push(new Particle(x, 0, 0, vy, size, 200, c));
 }
-
-function animate() {
+function loop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach((p, i) => {
+  parts.forEach((p, i) => {
     p.update(); p.draw();
-    if (p.life <= 0 || p.y > canvas.height) particles.splice(i, 1);
+    if (p.l <= 0 || p.y > canvas.height) parts.splice(i, 1);
   });
-  requestAnimationFrame(animate);
+  requestAnimationFrame(loop);
 }
-animate();
-setInterval(addFallingParticles, 100);
+loop();
+setInterval(add, 100);
