@@ -89,6 +89,21 @@ document.getElementById("save-username").onclick=()=>{
   }
 };
 
+// === Call Notifications ===
+const callTab = document.getElementById("call-tab");
+function showNotice(msg, color="#8000ff") {
+  const note = document.createElement("div");
+  note.textContent = msg;
+  note.style.cssText = `
+    background:${color};color:white;padding:10px 15px;
+    border-radius:8px;margin-top:15px;text-align:center;
+    box-shadow:0 0 10px ${color};opacity:0;transition:opacity .3s;
+  `;
+  callTab.prepend(note);
+  setTimeout(()=>note.style.opacity="1",50);
+  setTimeout(()=>{note.style.opacity="0";setTimeout(()=>note.remove(),500)},3000);
+}
+
 // === WebRTC Group Audio ===
 async function createPeerConnection(id) {
   const pc = new RTCPeerConnection();
@@ -104,6 +119,7 @@ async function createPeerConnection(id) {
 document.getElementById("joinCall").onclick = async () => {
   localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
   socket.emit("joinGroup");
+  showNotice("🔊 You joined the call", "#4b0082");
 };
 
 socket.on("user-joined", async id => {
@@ -141,6 +157,7 @@ document.getElementById("leaveCall").onclick = () => {
   Object.values(peers).forEach(pc => pc.close());
   peers = {};
   if (localStream) localStream.getTracks().forEach(t => t.stop());
+  showNotice("❌ You left the call", "#a020f0");
 };
 
 // === Background Particles ===
