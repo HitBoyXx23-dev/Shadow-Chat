@@ -4,15 +4,18 @@
   <meta charset="UTF-8" />
   <title>🕶️ Shadow Chat</title>
   <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
 <body>
   <canvas id="bgParticles"></canvas>
 
+  <!-- === ENTRY SCREEN === -->
   <div id="enter-screen" class="center">
     <h1 class="title">💜 Enter the Shadows 💜</h1>
     <button id="enter-btn">Enter</button>
   </div>
 
+  <!-- === APP CONTAINER === -->
   <div id="app-container" class="hidden">
     <header id="app-header">
       <h1 id="shadowTitle">🕶️ Shadow Chat</h1>
@@ -22,14 +25,17 @@
       </div>
     </header>
 
+    <!-- === NAVIGATION TABS === -->
     <nav id="nav-tabs">
       <button data-tab="chat" class="active">💬 Chat</button>
       <button data-tab="profile">👤 Profile</button>
       <button data-tab="call">🎙️ Call</button>
     </nav>
 
+    <!-- === CHAT TAB === -->
     <section id="chat-tab" class="tab active">
       <div id="messages"></div>
+
       <div id="input-area">
         <input type="file" id="file-input" hidden />
         <button id="file-btn">📎</button>
@@ -38,25 +44,31 @@
       </div>
     </section>
 
+    <!-- === PROFILE TAB === -->
     <section id="profile-tab" class="tab">
       <h2>Your Profile</h2>
       <img id="pfp" src="default_pfp.png" alt="Profile Picture" />
       <input type="file" id="pfp-upload" accept="image/*" hidden />
       <button id="change-pfp">Change Picture</button>
+
       <p><strong>Username:</strong> <span id="profile-name"></span></p>
       <input type="text" id="edit-username" placeholder="Change username..." />
       <button id="save-username">Save Username</button>
     </section>
 
+    <!-- === CALL TAB === -->
     <section id="call-tab" class="tab">
-      <h2>Group Voice Call</h2>
+      <h2>Group Voice / Screen Call</h2>
       <div class="call-controls">
-        <button id="joinCall">Join Call</button>
-        <button id="leaveCall">Leave Call</button>
+        <button id="joinCall">🎙️ Join Call</button>
+        <button id="leaveCall">❌ Leave Call</button>
+        <button id="shareScreen">🖥️ Share Screen</button>
       </div>
+      <div id="screen-preview"></div>
     </section>
   </div>
 
+  <!-- === SOCKET & MAIN SCRIPT === -->
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>
