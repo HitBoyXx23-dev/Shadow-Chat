@@ -47,26 +47,12 @@ function sendMsg() {
   const text = textInput.value.trim();
   if (!text) return;
 
-  const rendered = renderMessageText(text);
+  // URLs displayed as clickable purple links
+  const rendered = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:#a020f0;">$1</a>');
+
   const msg = { user: username, pfp, text: rendered, time: Date.now() };
   socket.emit("chatMessage", msg);
   textInput.value = "";
-}
-
-function renderMessageText(text) {
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  return text.replace(urlRegex, (url) => {
-    const lower = url.toLowerCase();
-    if (/\.(mp3|wav|ogg)$/i.test(lower)) {
-      return `<audio controls src="${url}" style="width:100%;margin-top:5px;"></audio>`;
-    } else if (/\.(mp4|webm|mov)$/i.test(lower)) {
-      return `<video controls src="${url}" style="max-width:100%;margin-top:5px;border-radius:8px;"></video>`;
-    } else if (/\.(jpg|jpeg|png|gif|webp)$/i.test(lower)) {
-      return `<img src="${url}" style="max-width:100%;margin-top:5px;border-radius:6px;">`;
-    } else {
-      return `<a href="${url}" target="_blank" style="color:#a020f0;">${url}</a>`;
-    }
-  });
 }
 
 function addMsg({ user, pfp, text }) {
@@ -75,7 +61,7 @@ function addMsg({ user, pfp, text }) {
   if (user === username) div.classList.add("self");
   div.innerHTML = `<img src="${pfp}" class="pfp"><div class="text"><b>${user}:</b><br></div>`;
   const textDiv = div.querySelector(".text");
-  textDiv.insertAdjacentHTML("beforeend", text); // ✅ insert HTML safely
+  textDiv.insertAdjacentHTML("beforeend", text);
   msgBox.appendChild(div);
   msgBox.scrollTop = msgBox.scrollHeight;
   hideInputIfOverflow();
@@ -108,9 +94,9 @@ fileInput.onchange = async () => {
     const data = reader.result;
 
     if (file.type.startsWith("video/")) {
-      html = `<video controls src="${data}" style="max-width:100%;border-radius:8px;"></video>`;
+      html = `<video src="${data}" controls style="max-width:100%;border-radius:8px;"></video>`;
     } else if (file.type.startsWith("audio/")) {
-      html = `<audio controls src="${data}" style="width:100%;"></audio>`;
+      html = `<audio src="${data}" controls style="width:100%;"></audio>`;
     } else if (file.type.startsWith("image/")) {
       html = `<img src="${data}" style="max-width:100%;border-radius:6px;">`;
     } else {
