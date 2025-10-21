@@ -40,21 +40,24 @@ socket.on("chatMessage", addMsg);
 const inputArea = document.getElementById("input-area");
 const msgBox = document.getElementById("messages");
 
+// Send button
 document.getElementById("send-btn").onclick = sendMsg;
+
 function sendMsg() {
   const text = document.getElementById("message-input").value.trim();
   if (!text) return;
 
+  // URL auto-embed
   let rendered = text;
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   rendered = rendered.replace(urlRegex, (url) => {
     const lower = url.toLowerCase();
     if (lower.endsWith(".mp3") || lower.endsWith(".wav") || lower.endsWith(".ogg")) {
-      return `<audio controls src="${url}" style="width:250px;"></audio>`;
+      return `<audio controls src="${url}" style="width:100%;"></audio>`;
     } else if (lower.endsWith(".mp4") || lower.endsWith(".webm") || lower.endsWith(".mov")) {
-      return `<video controls src="${url}" style="max-width:300px;border-radius:8px;"></video>`;
-    } else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".gif") || lower.endsWith(".webp")) {
-      return `<img src="${url}" style="max-width:250px;border-radius:6px;">`;
+      return `<video controls src="${url}" style="max-width:100%;border-radius:8px;"></video>`;
+    } else if (/\.(jpg|jpeg|png|gif|webp)$/i.test(lower)) {
+      return `<img src="${url}" style="max-width:100%;border-radius:6px;">`;
     } else {
       return `<a href="${url}" target="_blank" style="color:#a020f0;">${url}</a>`;
     }
@@ -75,7 +78,7 @@ function addMsg({ user, pfp, text }) {
   hideInputIfOverflow();
 }
 
-// Hide input when chat is very full
+// Hide input when chat very full
 function hideInputIfOverflow() {
   const totalMessages = msgBox.children.length;
   if (totalMessages > 25) {
@@ -85,7 +88,7 @@ function hideInputIfOverflow() {
   }
 }
 
-// Detect user scroll up → show input again
+// Auto-hide when scrolling up
 msgBox.addEventListener("scroll", () => {
   if (msgBox.scrollTop + msgBox.clientHeight < msgBox.scrollHeight - 100) {
     inputArea.classList.add("hidden");
@@ -94,7 +97,7 @@ msgBox.addEventListener("scroll", () => {
   }
 });
 
-// === File Upload ===
+// === File Upload (Base64 client-side, supports audio/video/images) ===
 const fileInput = document.getElementById("file-input");
 document.getElementById("file-btn").onclick = () => fileInput.click();
 
@@ -102,31 +105,33 @@ fileInput.onchange = async () => {
   const file = fileInput.files[0];
   if (!file) return;
 
-  const formData = new FormData();
-  formData.append("file", file);
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    let html = "";
+    const data = reader.result;
 
-  const res = await fetch("/upload", { method: "POST", body: formData });
-  const data = await res.json();
+    if (file.type.startsWith("video/")) {
+      html = `<video src="${data}" controls style="max-width:100%;border-radius:8px;"></video>`;
+    } else if (file.type.startsWith("audio/")) {
+      html = `<audio src="${data}" controls style="width:100%;"></audio>`;
+    } else if (file.type.startsWith("image/")) {
+      html = `<img src="${data}" style="max-width:100%;border-radius:6px;">`;
+    } else {
+      html = `<a href="${data}" download="${file.name}" style="color:#a020f0;">${file.name}</a>`;
+    }
 
-  let html = "";
-  if (file.type.startsWith("video/")) {
-    html = `<video src="${data.data}" controls style="max-width:300px;border-radius:8px;"></video>`;
-  } else if (file.type.startsWith("audio/")) {
-    html = `<audio src="${data.data}" controls style="width:250px;"></audio>`;
-  } else if (file.type.startsWith("image/")) {
-    html = `<img src="${data.data}" style="max-width:250px;border-radius:6px;">`;
-  } else {
-    html = `<a href="${data.data}" download="${file.name}" style="color:#a020f0;">${file.name}</a>`;
-  }
-
-  const msg = { user: username, pfp, text: html, time: Date.now() };
-  socket.emit("chatMessage", msg);
-  fileInput.value = "";
+    const msg = { user: username, pfp, text: html, time: Date.now() };
+    socket.emit("chatMessage", msg);
+    fileInput.value = "";
+  };
+  reader.readAsDataURL(file);
 };
 
 // === Profile ===
 const pfpEl = document.getElementById("pfp");
-document.getElementById("change-pfp").onclick = () => document.getElementById("pfp-upload").click();
+document.getElementById("change-pfp").onclick = () =>
+  document.getElementById("pfp-upload").click();
+
 document.getElementById("pfp-upload").onchange = () => {
   const f = document.getElementById("pfp-upload").files[0];
   if (!f) return;
@@ -138,6 +143,7 @@ document.getElementById("pfp-upload").onchange = () => {
   };
   r.readAsDataURL(f);
 };
+
 document.getElementById("save-username").onclick = () => {
   const n = document.getElementById("edit-username").value.trim();
   if (n) {
@@ -171,7 +177,12 @@ async function createPeerConnection(id) {
   const pc = new RTCPeerConnection();
   peers[id] = pc;
   localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-  pc.ontrack = e => { const a = new Audio(); a.srcObject = e.streams[0]; a.play(); };
+  pc.ontrack = e => {
+    const a = new Audio();
+    a.srcObject = e.streams[0];
+    a.autoplay = true;
+    a.play();
+  };
   pc.onicecandidate = e => {
     if (e.candidate) socket.emit("candidate", { candidate: e.candidate, to: id });
   };
@@ -223,11 +234,21 @@ document.getElementById("leaveCall").onclick = () => {
 };
 
 // === Background Particles ===
-const c=document.getElementById("bgParticles"),ctx=c.getContext("2d");
-function resize(){c.width=innerWidth;c.height=innerHeight;}resize();window.onresize=resize;
-let parts=[];function add(){parts.push({x:Math.random()*c.width,y:0,v:Math.random()*2+1,s:Math.random()*2+1,l:200});}
-function loop(){ctx.clearRect(0,0,c.width,c.height);parts.forEach((p,i)=>{p.y+=p.v;p.l--;
-ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,6.28);
-ctx.fillStyle=`rgba(128,0,255,${Math.random()*0.5})`;ctx.fill();
-if(p.l<=0||p.y>c.height)parts.splice(i,1);});requestAnimationFrame(loop);}
-setInterval(add,100);loop();
+const c = document.getElementById("bgParticles"), ctx = c.getContext("2d");
+function resize() { c.width = innerWidth; c.height = innerHeight; }
+resize(); window.onresize = resize;
+let parts = [];
+function add() { parts.push({ x: Math.random() * c.width, y: 0, v: Math.random() * 2 + 1, s: Math.random() * 2 + 1, l: 200 }); }
+function loop() {
+  ctx.clearRect(0, 0, c.width, c.height);
+  parts.forEach((p, i) => {
+    p.y += p.v; p.l--;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 6.28);
+    ctx.fillStyle = `rgba(128,0,255,${Math.random() * 0.5})`;
+    ctx.fill();
+    if (p.l <= 0 || p.y > c.height) parts.splice(i, 1);
+  });
+  requestAnimationFrame(loop);
+}
+setInterval(add, 100);
+loop();
