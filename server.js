@@ -10,10 +10,11 @@ const server = http.createServer(app);
 const io = new Server(server);
 const PORT = process.env.PORT || 3000;
 
+// === STATIC FILES ===
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
-// temp memory upload
+// === FILE UPLOAD HANDLER ===
 const upload = multer({ storage: multer.memoryStorage() });
 app.post("/upload", upload.single("file"), (req, res) => {
   if (!req.file) return res.status(400).send("No file uploaded");
@@ -21,28 +22,35 @@ app.post("/upload", upload.single("file"), (req, res) => {
   res.json({ data: base64 });
 });
 
-// persistent chat
+// === CHAT HISTORY PERSISTENCE ===
 const CHAT_FILE = path.join(__dirname, "chatHistory.json");
 let chat = fs.existsSync(CHAT_FILE)
   ? JSON.parse(fs.readFileSync(CHAT_FILE, "utf8") || "[]")
   : [];
 
 let users = {}; // socket.id → username
+let userSockets = {}; // username → socket.id
 
+// === SOCKET HANDLING ===
 io.on("connection", (socket) => {
-  socket.on("register", (user) => {
-    users[socket.id] = user;
+  console.log("User connected:", socket.id);
+
+  // --- Register user ---
+  socket.on("register", (username) => {
+    users[socket.id] = username;
+    userSockets[username] = socket.id;
     io.emit("userList", Object.values(users));
     socket.emit("chatHistory", chat);
   });
 
+  // --- Chat messages ---
   socket.on("chatMessage", (msg) => {
     chat.push(msg);
     fs.writeFileSync(CHAT_FILE, JSON.stringify(chat, null, 2));
     io.emit("chatMessage", msg);
   });
 
-  // --- WebRTC signalling for group audio ---
+  // === GROUP CALL SIGNALING ===
   socket.on("joinGroup", () => {
     socket.join("group");
     socket.to("group").emit("user-joined", socket.id);
@@ -57,10 +65,30 @@ io.on("connection", (socket) => {
     socket.to("group").emit("user-left", socket.id);
   });
 
+  // === PRIVATE CALL SIGNALING ===
+  socket.on("privateOffer", ({ offer, to, from }) => {
+    const targetSocket = userSockets[to];
+    if (targetSocket) io.to(targetSocket).emit("privateOffer", { offer, from });
+  });
+
+  socket.on("privateAnswer", ({ answer, to }) => {
+    const targetSocket = userSockets[to];
+    if (targetSocket) io.to(targetSocket).emit("privateAnswer", { answer });
+  });
+
+  socket.on("privateCandidate", ({ candidate, to }) => {
+    const targetSocket = userSockets[to];
+    if (targetSocket) io.to(targetSocket).emit("privateCandidate", { candidate });
+  });
+
+  // === DISCONNECT ===
   socket.on("disconnect", () => {
+    const name = users[socket.id];
     delete users[socket.id];
+    delete userSockets[name];
     io.emit("userList", Object.values(users));
     socket.to("group").emit("user-left", socket.id);
+    console.log(`User ${name || socket.id} disconnected`);
   });
 });
 
