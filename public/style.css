@@ -103,7 +103,7 @@ body {
 #chat-tab {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 150px); /* fills space below tabs */
+  height: calc(100vh - 150px);
   overflow: hidden;
 }
 
@@ -117,8 +117,40 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  position: relative;
 }
 
+/* Scrollbar styling (visual hint) */
+#messages::-webkit-scrollbar {
+  width: 8px;
+}
+#messages::-webkit-scrollbar-track {
+  background: rgba(40, 0, 60, 0.3);
+  border-radius: 4px;
+}
+#messages::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #8000ff, #4b0082);
+  border-radius: 4px;
+  box-shadow: 0 0 8px #8000ff;
+}
+#messages::after {
+  content: "⇅ Scroll to view older messages";
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(170, 120, 255, 0.4);
+  font-size: 0.8em;
+  opacity: 0;
+  transition: opacity 0.5s;
+  animation: scrollHint 2.5s ease-in-out infinite;
+}
+@keyframes scrollHint {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.6; }
+}
+
+/* ===== MESSAGE BUBBLES ===== */
 .message {
   display: flex;
   align-items: flex-start;
@@ -138,8 +170,9 @@ body {
   background: rgba(50, 0, 100, 0.5);
   padding: 8px 12px;
   border-radius: 10px;
-  max-width: 80%;
+  max-width: 85%;
   font-size: 0.95em;
+  word-wrap: break-word;
 }
 
 .message.self .text {
@@ -188,10 +221,17 @@ body {
   box-shadow: 0 0 10px rgba(128, 0, 255, 0.3);
   transition: transform 0.2s ease;
 }
+#file-btn:hover, #send-btn:hover { transform: scale(1.05); }
 
-#file-btn:hover,
-#send-btn:hover {
-  transform: scale(1.05);
+/* ===== MEDIA ELEMENTS ===== */
+video, audio, img {
+  max-width: 100%;
+  height: auto;
+  margin-top: 6px;
+  border: 1px solid #8000ff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(128, 0, 255, 0.3);
+  display: block;
 }
 
 /* ===== PROFILE TAB ===== */
@@ -237,14 +277,6 @@ body {
   box-shadow: 0 0 10px rgba(128, 0, 255, 0.3);
 }
 
-/* ===== MEDIA PLAYERS ===== */
-video, audio {
-  margin-top: 5px;
-  border: 1px solid #8000ff;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(128, 0, 255, 0.3);
-}
-
 /* ===== BACKGROUND ===== */
 #bgParticles {
   position: fixed;
@@ -261,9 +293,5 @@ video, audio {
   #messages { font-size: 0.9em; }
   #input-area input[type="text"] { font-size: 0.9em; }
   #nav-tabs button { padding: 10px 0; font-size: 0.9em; }
-
-  /* Use dynamic viewport height for keyboard-safe layout */
-  #chat-tab {
-    height: calc(100dvh - 150px);
-  }
+  #chat-tab { height: calc(100dvh - 150px); }
 }
