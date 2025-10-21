@@ -12,6 +12,16 @@
   <!-- Notification Banner -->
   <div id="banner"></div>
 
+  <!-- === CALL POPUP === -->
+  <div id="call-popup" class="hidden">
+    <div class="popup-content">
+      <h2 id="caller-name"></h2>
+      <p>is calling you...</p>
+      <button id="acceptCall">✅ Accept</button>
+      <button id="rejectCall">❌ Reject</button>
+    </div>
+  </div>
+
   <!-- === ENTRY SCREEN === -->
   <div id="enter-screen" class="center">
     <h1 class="title">💜 Enter the Shadows 💜</h1>
@@ -28,7 +38,6 @@
       </div>
     </header>
 
-    <!-- === NAVIGATION TABS === -->
     <nav id="nav-tabs">
       <button data-tab="chat" class="active">💬 Chat</button>
       <button data-tab="profile">👤 Profile</button>
@@ -73,10 +82,12 @@
     <!-- === 1-ON-1 CALL TAB === -->
     <section id="private-tab" class="tab">
       <h2>Private 1-on-1 Call</h2>
-      <p>Select a user below to start a private voice call:</p>
+      <p>Select a user below to start a private call:</p>
       <ul id="private-user-list"></ul>
 
       <div class="call-controls">
+        <button id="mutePrivate">🎤 Mute</button>
+        <button id="sharePrivate">🖥️ Share Screen</button>
         <button id="endPrivateCall" class="hidden">❌ End Call</button>
       </div>
       <div id="private-preview"></div>
