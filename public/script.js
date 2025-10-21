@@ -26,13 +26,10 @@ document.querySelectorAll("#nav-tabs button").forEach(btn => {
 
 // === Active Users ===
 const userList = document.getElementById("user-list");
+const userCount = document.getElementById("user-count");
 socket.on("userList", users => {
-  userList.innerHTML = "";
-  users.forEach(u => {
-    const li = document.createElement("li");
-    li.textContent = u;
-    userList.appendChild(li);
-  });
+  userList.innerHTML = users.map(u => `<li>${u}</li>`).join("");
+  userCount.textContent = `Active: ${users.length}`;
 });
 
 // === Chat ===
