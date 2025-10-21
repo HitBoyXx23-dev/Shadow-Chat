@@ -107,6 +107,7 @@ body {
   overflow: hidden;
 }
 
+/* ✅ Messages now start from TOP */
 #messages {
   flex: 1;
   overflow-y: auto;
@@ -116,7 +117,8 @@ body {
   scroll-behavior: smooth;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start; /* start at top */
+  align-items: flex-start;
   position: relative;
 }
 
@@ -221,9 +223,13 @@ body {
   box-shadow: 0 0 10px rgba(128, 0, 255, 0.3);
   transition: transform 0.2s ease;
 }
-#file-btn:hover, #send-btn:hover { transform: scale(1.05); }
+#file-btn:hover,
+#send-btn:hover {
+  transform: scale(1.05);
+}
 
 /* ===== MEDIA ELEMENTS ===== */
+/* ✅ Fix: media auto-fit any screen width */
 video, audio, img {
   max-width: 100%;
   height: auto;
@@ -232,6 +238,12 @@ video, audio, img {
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(128, 0, 255, 0.3);
   display: block;
+  object-fit: contain;
+}
+
+/* Make audio bar full width for small screens */
+audio {
+  width: 100%;
 }
 
 /* ===== PROFILE TAB ===== */
