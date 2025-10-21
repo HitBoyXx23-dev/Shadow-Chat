@@ -1,203 +1,97 @@
-// === Shadow Chat Global Client ===
 const socket = io();
 
-// --- Elements ---
-const usernameInput = document.getElementById("username");
-const pfpUrlInput = document.getElementById("pfpUrl");
-const saveBtn = document.getElementById("saveProfile");
-const pfpPreview = document.getElementById("pfpPreview");
-const status = document.getElementById("status");
-const chatLog = document.getElementById("chatLog");
-const messageInput = document.getElementById("message");
-const sendBtn = document.getElementById("sendBtn");
-const onlineCount = document.getElementById("onlineCount");
+// ==== Fireworks ====
+const canvas = document.getElementById("fireworkCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = innerWidth; canvas.height = innerHeight;
+let fws=[];
+function rand(a,b){return Math.random()*(b-a)+a}
+function Firework(){this.x=rand(0,canvas.width);this.y=canvas.height;this.targetY=rand(canvas.height*0.3,canvas.height*0.6);this.color=`hsl(${rand(250,300)},100%,70%)`;this.velY=rand(4,7);}
+Firework.prototype.update=function(){this.y-=this.velY;if(this.y<this.targetY)this.done=true;}
+Firework.prototype.draw=function(){ctx.fillStyle=this.color;ctx.beginPath();ctx.arc(this.x,this.y,2,0,Math.PI*2);ctx.fill();}
+function loop(){ctx.fillStyle="rgba(0,0,0,0.2)";ctx.fillRect(0,0,canvas.width,canvas.height);
+if(Math.random()<0.05)fws.push(new Firework());
+fws.forEach((fw,i)=>{fw.update();fw.draw();if(fw.done)fws.splice(i,1);});
+requestAnimationFrame(loop);}
+loop();
 
-// --- Tabs ---
-const tabs = document.querySelectorAll(".tab");
-const contents = document.querySelectorAll(".tab-content");
-tabs.forEach((tab) => {
-  tab.addEventListener("click", () => {
-    tabs.forEach((t) => t.classList.remove("active"));
-    contents.forEach((c) => c.classList.remove("active"));
-    tab.classList.add("active");
-    document.getElementById(tab.dataset.tab).classList.add("active");
-  });
+// ==== Tabs ====
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.onclick=()=>{document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active"));
+  tab.classList.add("active");document.getElementById(tab.dataset.tab).classList.add("active");};
 });
 
-// === PROFILE ===
-window.addEventListener("DOMContentLoaded", () => {
-  const savedName = localStorage.getItem("shadow_username");
-  const savedPfp = localStorage.getItem("shadow_pfp");
-  if (savedName) usernameInput.value = savedName;
-  if (savedPfp) pfpUrlInput.value = savedPfp;
-  pfpPreview.src = savedPfp || "default_pfp.png";
-  if (savedName) status.textContent = `🕶️ Welcome back, ${savedName}`;
-});
+// ==== Profile ====
+const username=document.getElementById("username"),pfpUrl=document.getElementById("pfpUrl"),
+pfpPreview=document.getElementById("pfpPreview"),saveProfile=document.getElementById("saveProfile"),
+status=document.getElementById("status");
+saveProfile.onclick=()=>{const n=username.value.trim();const p=pfpUrl.value.trim()||"default_pfp.png";
+if(!n)return alert("Enter username!");localStorage.setItem("shadow_username",n);localStorage.setItem("shadow_pfp",p);
+pfpPreview.src=p;status.textContent=`✅ Saved as ${n}`;}
+window.onload=()=>{const n=localStorage.getItem("shadow_username"),p=localStorage.getItem("shadow_pfp");
+if(n)username.value=n;if(p){pfpUrl.value=p;pfpPreview.src=p;}}
 
-saveBtn.addEventListener("click", () => {
-  const name = usernameInput.value.trim();
-  const pfp = pfpUrlInput.value.trim() || "default_pfp.png";
-  if (!name) return alert("Please enter a username!");
-  localStorage.setItem("shadow_username", name);
-  localStorage.setItem("shadow_pfp", pfp);
-  pfpPreview.src = pfp;
-  status.textContent = `✅ Profile saved as ${name}`;
-});
-
-// === CHAT ===
-sendBtn.addEventListener("click", sendMessage);
-messageInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") sendMessage();
-});
-
-function sendMessage() {
-  const name = localStorage.getItem("shadow_username") || "Anonymous";
-  const pfp = localStorage.getItem("shadow_pfp") || "default_pfp.png";
-  const text = messageInput.value.trim();
-  if (!text) return;
-
-  const now = new Date();
-  const formattedTime = now.toLocaleString([], {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  });
-
-  const msg = { name, pfp, text, time: formattedTime };
-  socket.emit("chat message", msg);
-  messageInput.value = "";
+// ==== Chat ====
+const chatLog=document.getElementById("chatLog"),msg=document.getElementById("message"),
+sendBtn=document.getElementById("sendBtn"),onlineCount=document.getElementById("onlineCount");
+sendBtn.onclick=sendMessage;msg.addEventListener("keypress",e=>{if(e.key==="Enter")sendMessage();});
+socket.on("userCount",c=>onlineCount.textContent=`🟢 Online Users: ${c}`);
+socket.on("chat history",h=>h.forEach(renderMsg));
+socket.on("chat message",renderMsg);
+function sendMessage(){
+  const t=msg.value.trim();if(!t)return;
+  const m={name:localStorage.getItem("shadow_username")||"Anon",
+           pfp:localStorage.getItem("shadow_pfp")||"default_pfp.png",
+           text:t,time:new Date().toLocaleTimeString()};
+  socket.emit("chat message",m);msg.value="";
+}
+function renderMsg(m){
+  const div=document.createElement("div");div.className="message";
+  div.innerHTML=`<img src="${m.pfp}" class="pfp"><div><strong>${m.name}</strong>
+  <span style="font-size:0.7em;opacity:0.7;">${m.time}</span><br>${parseMedia(m.text)}</div>`;
+  chatLog.appendChild(div);chatLog.scrollTop=chatLog.scrollHeight;
+}
+function parseMedia(t){
+  if(t.match(/\.(jpeg|jpg|gif|png)$/i))return `<img src="${t}" class="media">`;
+  if(t.match(/\.(mp4|webm)$/i))return `<video src="${t}" controls class="media"></video>`;
+  if(t.startsWith("http"))return `<a href="${t}" target="_blank">${t}</a>`;
+  return t;
 }
 
-// --- Receive chat history ---
-socket.on("chat history", (history) => {
-  chatLog.innerHTML = "";
-  history.forEach(addMessageToLog);
-  localStorage.setItem("shadow_chat_history", JSON.stringify(history));
-});
+// ==== Call ====
+let peer,localStream;
+const startCall=document.getElementById("startCall"),
+endCall=document.getElementById("endCall"),
+localVideo=document.getElementById("localVideo"),
+remoteVideo=document.getElementById("remoteVideo");
 
-// --- Receive new messages ---
-socket.on("chat message", (msg) => {
-  addMessageToLog(msg);
-  let chatHistory = JSON.parse(localStorage.getItem("shadow_chat_history") || "[]");
-  chatHistory.push(msg);
-  if (chatHistory.length > 200) chatHistory.shift();
-  localStorage.setItem("shadow_chat_history", JSON.stringify(chatHistory));
-});
+startCall.onclick=async()=>{
+  localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+  localVideo.srcObject=localStream;
+  peer=new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"}]});
+  localStream.getTracks().forEach(t=>peer.addTrack(t,localStream));
+  peer.ontrack=e=>remoteVideo.srcObject=e.streams[0];
+  peer.onicecandidate=e=>{if(e.candidate)socket.emit("callSignal",{type:"candidate",candidate:e.candidate});};
+  const offer=await peer.createOffer();await peer.setLocalDescription(offer);
+  socket.emit("callSignal",{type:"offer",offer});
+};
+endCall.onclick=()=>{if(peer){peer.close();peer=null;}
+if(localStream)localStream.getTracks().forEach(t=>t.stop());
+localVideo.srcObject=null;remoteVideo.srcObject=null;};
 
-// --- Online users counter ---
-socket.on("userCount", (count) => {
-  onlineCount.textContent = `🟢 Online Users: ${count}`;
-});
-
-// --- Helper to render message ---
-function addMessageToLog(msg) {
-  const div = document.createElement("div");
-  div.classList.add("message");
-  div.innerHTML = `
-    <img src="${msg.pfp}" alt="pfp">
-    <div>
-      <strong>${msg.name}</strong>
-      <span style="font-size:0.7em;opacity:0.7;"> ${msg.time || ""}</span><br>
-      <span>${escapeHTML(msg.text)}</span>
-    </div>
-  `;
-  chatLog.appendChild(div);
-  chatLog.scrollTop = chatLog.scrollHeight;
-}
-
-function escapeHTML(str) {
-  return str.replace(/[&<>'"]/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c])
-  );
-}
-
-// === FALLING PURPLE PARTICLES + PURPLE FIREWORK BURST ===
-const canvas = document.getElementById('fireworkCanvas');
-const ctx = canvas.getContext('2d');
-let fireworks = [];
-let ambient = [];
-
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-// --- Ambient Falling Purple Particles ---
-function createAmbient() {
-  ambient = [];
-  for (let i = 0; i < 80; i++) {
-    ambient.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      r: Math.random() * 1.5 + 0.5,
-      s: Math.random() * 0.5 + 0.2,
-      c: `rgba(${100 + Math.random()*100},0,${200 + Math.random()*55},${0.2 + Math.random()*0.5})`
-    });
+socket.on("callSignal",async d=>{
+  if(!peer){
+    peer=new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"}]});
+    peer.ontrack=e=>remoteVideo.srcObject=e.streams[0];
+    peer.onicecandidate=e=>{if(e.candidate)socket.emit("callSignal",{type:"candidate",candidate:e.candidate});};
+    localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    localVideo.srcObject=localStream;
+    localStream.getTracks().forEach(t=>peer.addTrack(t,localStream));
   }
-}
-createAmbient();
-
-// --- Firework Burst (instant) ---
-function createFirework(x, y) {
-  for (let i = 0; i < 60; i++) {
-    fireworks.push({
-      x, y,
-      r: Math.random() * 2 + 1,
-      c: `hsl(${260 + Math.random()*40}, 100%, 70%)`,
-      s: Math.random() * 5 + 2,
-      a: Math.random() * Math.PI * 2,
-      alpha: 1
-    });
-  }
-}
-
-// --- Animation Loop ---
-function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // 🌌 Draw ambient dust
-  ctx.save();
-  ambient.forEach(p => {
-    p.y += p.s;
-    if (p.y > canvas.height) p.y = -10;
-    ctx.beginPath();
-    ctx.fillStyle = p.c;
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = p.c;
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fill();
-  });
-  ctx.restore();
-
-  // 💥 Firework bursts
-  fireworks.forEach((f, i) => {
-    f.x += Math.cos(f.a) * f.s;
-    f.y += Math.sin(f.a) * f.s;
-    f.alpha -= 0.02;
-    if (f.alpha <= 0) fireworks.splice(i, 1);
-    ctx.beginPath();
-    ctx.globalAlpha = f.alpha;
-    ctx.fillStyle = f.c;
-    ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-  });
-
-  requestAnimationFrame(animate);
-}
-animate();
-
-// 💜 Trigger firework instantly on header hover
-const header = document.querySelector('header');
-if (header) {
-  header.addEventListener('mouseenter', () => {
-    const rect = header.getBoundingClientRect();
-    createFirework(rect.left + rect.width / 2, rect.top + 10);
-  });
-}
+  if(d.type==="offer"){await peer.setRemoteDescription(d.offer);
+    const ans=await peer.createAnswer();await peer.setLocalDescription(ans);
+    socket.emit("callSignal",{type:"answer",answer:ans});}
+  else if(d.type==="answer"){await peer.setRemoteDescription(d.answer);}
+  else if(d.type==="candidate"&&d.candidate){await peer.addIceCandidate(d.candidate);}
+});
