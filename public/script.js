@@ -18,8 +18,8 @@ document.getElementById("enter-btn").onclick = () => {
 // === Tabs ===
 document.querySelectorAll("#nav-tabs button").forEach(btn => {
   btn.addEventListener("click", () => {
-    document.querySelectorAll("#nav-tabs button").forEach(b=>b.classList.remove("active"));
-    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll("#nav-tabs button").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById(`${btn.dataset.tab}-tab`).classList.add("active");
   });
@@ -36,21 +36,42 @@ socket.on("userList", users => {
 // === Chat ===
 socket.on("chatHistory", msgs => msgs.forEach(addMsg));
 socket.on("chatMessage", addMsg);
+
 document.getElementById("send-btn").onclick = sendMsg;
-function sendMsg(){
+function sendMsg() {
   const text = document.getElementById("message-input").value.trim();
-  if(!text) return;
-  const msg = { user: username, pfp, text, time: Date.now() };
+  if (!text) return;
+
+  let rendered = text;
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+  // Detect and embed media URLs
+  rendered = rendered.replace(urlRegex, (url) => {
+    const lower = url.toLowerCase();
+    if (lower.endsWith(".mp3") || lower.endsWith(".wav") || lower.endsWith(".ogg")) {
+      return `<audio controls src="${url}" style="width:250px;"></audio>`;
+    } else if (lower.endsWith(".mp4") || lower.endsWith(".webm") || lower.endsWith(".mov")) {
+      return `<video controls src="${url}" style="max-width:300px;border-radius:8px;"></video>`;
+    } else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".gif") || lower.endsWith(".webp")) {
+      return `<img src="${url}" style="max-width:250px;border-radius:6px;">`;
+    } else {
+      return `<a href="${url}" target="_blank" style="color:#a020f0;">${url}</a>`;
+    }
+  });
+
+  const msg = { user: username, pfp, text: rendered, time: Date.now() };
   socket.emit("chatMessage", msg);
   document.getElementById("message-input").value = "";
 }
-function addMsg({user,pfp,text}){
-  const div=document.createElement("div");
+
+function addMsg({ user, pfp, text }) {
+  const div = document.createElement("div");
   div.classList.add("message");
-  if(user===username)div.classList.add("self");
-  div.innerHTML=`<img src="${pfp}" class="pfp"><div class="text"><b>${user}:</b><br>${text}</div>`;
-  document.getElementById("messages").appendChild(div);
-  document.getElementById("messages").scrollTop=document.getElementById("messages").scrollHeight;
+  if (user === username) div.classList.add("self");
+  div.innerHTML = `<img src="${pfp}" class="pfp"><div class="text"><b>${user}:</b><br>${text}</div>`;
+  const container = document.getElementById("messages");
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
 }
 
 // === File Upload ===
@@ -83,33 +104,33 @@ fileInput.onchange = async () => {
   fileInput.value = "";
 };
 
-
 // === Profile ===
-const pfpEl=document.getElementById("pfp");
-document.getElementById("change-pfp").onclick=()=>document.getElementById("pfp-upload").click();
-document.getElementById("pfp-upload").onchange=()=>{
-  const f=document.getElementById("pfp-upload").files[0];
-  if(!f)return;
-  const r=new FileReader();
-  r.onload=()=>{
-    pfpEl.src=r.result;
-    localStorage.setItem("shadow_pfp",r.result);
-    pfp=r.result;
+const pfpEl = document.getElementById("pfp");
+document.getElementById("change-pfp").onclick = () => document.getElementById("pfp-upload").click();
+document.getElementById("pfp-upload").onchange = () => {
+  const f = document.getElementById("pfp-upload").files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    pfpEl.src = r.result;
+    localStorage.setItem("shadow_pfp", r.result);
+    pfp = r.result;
   };
   r.readAsDataURL(f);
 };
-document.getElementById("save-username").onclick=()=>{
-  const n=document.getElementById("edit-username").value.trim();
-  if(n){
-    username=n;localStorage.setItem("shadow_username",n);
-    document.getElementById("profile-name").textContent=n;
-    socket.emit("register",n);
+document.getElementById("save-username").onclick = () => {
+  const n = document.getElementById("edit-username").value.trim();
+  if (n) {
+    username = n;
+    localStorage.setItem("shadow_username", n);
+    document.getElementById("profile-name").textContent = n;
+    socket.emit("register", n);
   }
 };
 
 // === Call Notifications ===
 const callTab = document.getElementById("call-tab");
-function showNotice(msg, color="#8000ff") {
+function showNotice(msg, color = "#8000ff") {
   const note = document.createElement("div");
   note.textContent = msg;
   note.style.cssText = `
@@ -118,8 +139,11 @@ function showNotice(msg, color="#8000ff") {
     box-shadow:0 0 10px ${color};opacity:0;transition:opacity .3s;
   `;
   callTab.prepend(note);
-  setTimeout(()=>note.style.opacity="1",50);
-  setTimeout(()=>{note.style.opacity="0";setTimeout(()=>note.remove(),500)},3000);
+  setTimeout(() => (note.style.opacity = "1"), 50);
+  setTimeout(() => {
+    note.style.opacity = "0";
+    setTimeout(() => note.remove(), 500);
+  }, 3000);
 }
 
 // === WebRTC Group Audio ===
@@ -127,7 +151,11 @@ async function createPeerConnection(id) {
   const pc = new RTCPeerConnection();
   peers[id] = pc;
   localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-  pc.ontrack = e => { const a = new Audio(); a.srcObject = e.streams[0]; a.play(); };
+  pc.ontrack = e => {
+    const a = new Audio();
+    a.srcObject = e.streams[0];
+    a.play();
+  };
   pc.onicecandidate = e => {
     if (e.candidate) socket.emit("candidate", { candidate: e.candidate, to: id });
   };
@@ -179,11 +207,30 @@ document.getElementById("leaveCall").onclick = () => {
 };
 
 // === Background Particles ===
-const c=document.getElementById("bgParticles"),ctx=c.getContext("2d");
-function resize(){c.width=innerWidth;c.height=innerHeight;}resize();window.onresize=resize;
-let parts=[];function add(){parts.push({x:Math.random()*c.width,y:0,v:Math.random()*2+1,s:Math.random()*2+1,l:200});}
-function loop(){ctx.clearRect(0,0,c.width,c.height);parts.forEach((p,i)=>{p.y+=p.v;p.l--;
-ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,6.28);
-ctx.fillStyle=`rgba(128,0,255,${Math.random()*0.5})`;ctx.fill();
-if(p.l<=0||p.y>c.height)parts.splice(i,1);});requestAnimationFrame(loop);}
-setInterval(add,100);loop();
+const c = document.getElementById("bgParticles"),
+  ctx = c.getContext("2d");
+function resize() {
+  c.width = innerWidth;
+  c.height = innerHeight;
+}
+resize();
+window.onresize = resize;
+let parts = [];
+function add() {
+  parts.push({ x: Math.random() * c.width, y: 0, v: Math.random() * 2 + 1, s: Math.random() * 2 + 1, l: 200 });
+}
+function loop() {
+  ctx.clearRect(0, 0, c.width, c.height);
+  parts.forEach((p, i) => {
+    p.y += p.v;
+    p.l--;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.s, 0, 6.28);
+    ctx.fillStyle = `rgba(128,0,255,${Math.random() * 0.5})`;
+    ctx.fill();
+    if (p.l <= 0 || p.y > c.height) parts.splice(i, 1);
+  });
+  requestAnimationFrame(loop);
+}
+setInterval(add, 100);
+loop();
