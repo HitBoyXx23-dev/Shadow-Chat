@@ -33,6 +33,7 @@
       <button data-tab="chat" class="active">💬 Chat</button>
       <button data-tab="profile">👤 Profile</button>
       <button data-tab="call">🎙️ Call</button>
+      <button data-tab="private">📞 1-on-1</button>
     </nav>
 
     <!-- === CHAT TAB === -->
@@ -57,7 +58,7 @@
       <button id="save-username">Save Username</button>
     </section>
 
-    <!-- === CALL TAB === -->
+    <!-- === GROUP CALL TAB === -->
     <section id="call-tab" class="tab">
       <h2>Voice Call With Screen Share</h2>
       <div class="call-controls">
@@ -68,9 +69,20 @@
       </div>
       <div id="screen-preview"></div>
     </section>
+
+    <!-- === 1-ON-1 CALL TAB === -->
+    <section id="private-tab" class="tab">
+      <h2>Private 1-on-1 Call</h2>
+      <p>Select a user below to start a private voice call:</p>
+      <ul id="private-user-list"></ul>
+
+      <div class="call-controls">
+        <button id="endPrivateCall" class="hidden">❌ End Call</button>
+      </div>
+      <div id="private-preview"></div>
+    </section>
   </div>
 
-  <!-- === SOCKET & MAIN SCRIPT === -->
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>
