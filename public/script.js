@@ -37,6 +37,9 @@ socket.on("userList", users => {
 socket.on("chatHistory", msgs => msgs.forEach(addMsg));
 socket.on("chatMessage", addMsg);
 
+const inputArea = document.getElementById("input-area");
+const msgBox = document.getElementById("messages");
+
 document.getElementById("send-btn").onclick = sendMsg;
 function sendMsg() {
   const text = document.getElementById("message-input").value.trim();
@@ -44,8 +47,6 @@ function sendMsg() {
 
   let rendered = text;
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-
-  // Detect and embed media URLs
   rendered = rendered.replace(urlRegex, (url) => {
     const lower = url.toLowerCase();
     if (lower.endsWith(".mp3") || lower.endsWith(".wav") || lower.endsWith(".ogg")) {
@@ -69,10 +70,29 @@ function addMsg({ user, pfp, text }) {
   div.classList.add("message");
   if (user === username) div.classList.add("self");
   div.innerHTML = `<img src="${pfp}" class="pfp"><div class="text"><b>${user}:</b><br>${text}</div>`;
-  const container = document.getElementById("messages");
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
+  msgBox.appendChild(div);
+  msgBox.scrollTop = msgBox.scrollHeight;
+  hideInputIfOverflow();
 }
+
+// Hide input when chat is very full
+function hideInputIfOverflow() {
+  const totalMessages = msgBox.children.length;
+  if (totalMessages > 25) {
+    inputArea.classList.add("hidden");
+  } else {
+    inputArea.classList.remove("hidden");
+  }
+}
+
+// Detect user scroll up → show input again
+msgBox.addEventListener("scroll", () => {
+  if (msgBox.scrollTop + msgBox.clientHeight < msgBox.scrollHeight - 100) {
+    inputArea.classList.add("hidden");
+  } else {
+    inputArea.classList.remove("hidden");
+  }
+});
 
 // === File Upload ===
 const fileInput = document.getElementById("file-input");
@@ -151,11 +171,7 @@ async function createPeerConnection(id) {
   const pc = new RTCPeerConnection();
   peers[id] = pc;
   localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-  pc.ontrack = e => {
-    const a = new Audio();
-    a.srcObject = e.streams[0];
-    a.play();
-  };
+  pc.ontrack = e => { const a = new Audio(); a.srcObject = e.streams[0]; a.play(); };
   pc.onicecandidate = e => {
     if (e.candidate) socket.emit("candidate", { candidate: e.candidate, to: id });
   };
@@ -207,30 +223,11 @@ document.getElementById("leaveCall").onclick = () => {
 };
 
 // === Background Particles ===
-const c = document.getElementById("bgParticles"),
-  ctx = c.getContext("2d");
-function resize() {
-  c.width = innerWidth;
-  c.height = innerHeight;
-}
-resize();
-window.onresize = resize;
-let parts = [];
-function add() {
-  parts.push({ x: Math.random() * c.width, y: 0, v: Math.random() * 2 + 1, s: Math.random() * 2 + 1, l: 200 });
-}
-function loop() {
-  ctx.clearRect(0, 0, c.width, c.height);
-  parts.forEach((p, i) => {
-    p.y += p.v;
-    p.l--;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.s, 0, 6.28);
-    ctx.fillStyle = `rgba(128,0,255,${Math.random() * 0.5})`;
-    ctx.fill();
-    if (p.l <= 0 || p.y > c.height) parts.splice(i, 1);
-  });
-  requestAnimationFrame(loop);
-}
-setInterval(add, 100);
-loop();
+const c=document.getElementById("bgParticles"),ctx=c.getContext("2d");
+function resize(){c.width=innerWidth;c.height=innerHeight;}resize();window.onresize=resize;
+let parts=[];function add(){parts.push({x:Math.random()*c.width,y:0,v:Math.random()*2+1,s:Math.random()*2+1,l:200});}
+function loop(){ctx.clearRect(0,0,c.width,c.height);parts.forEach((p,i)=>{p.y+=p.v;p.l--;
+ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,6.28);
+ctx.fillStyle=`rgba(128,0,255,${Math.random()*0.5})`;ctx.fill();
+if(p.l<=0||p.y>c.height)parts.splice(i,1);});requestAnimationFrame(loop);}
+setInterval(add,100);loop();
