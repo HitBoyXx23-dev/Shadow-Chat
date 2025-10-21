@@ -1,24 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>🕶️ Shadow Chat Ultra</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>🕶️ Shadow Chat</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <canvas id="fireworkCanvas"></canvas>
 
   <!-- Intro Screen -->
   <div id="startScreen">
-    <h1>💜 Enter the Shadows 💜</h1>
-    <button id="enterBtn">ENTER</button>
+    <div class="intro-box">
+      <h1 class="intro-title">🕶️ Welcome to <span>Shadow Chat</span></h1>
+      <p class="intro-sub">Step into the neon void and connect with the world in shadows.</p>
+      <button id="enterBtn">Enter the Shadows</button>
+    </div>
   </div>
 
   <!-- Main App -->
   <div id="mainApp" style="display:none;">
-    <header>🕶️ Shadow Chat Ultra</header>
-
+    <header>🕶️ Shadow Chat</header>
     <div class="tabs">
       <button class="tab active" data-tab="profile">Profile</button>
       <button class="tab" data-tab="chat">Chat</button>
@@ -26,31 +28,28 @@
     </div>
 
     <div class="container">
-      <!-- Profile -->
       <section id="profile" class="tab-content active">
         <h1>🕶️ Shadow Profile</h1>
         <p>Your info is stored locally.</p>
-        <img id="pfpPreview" src="default_pfp.png" />
-        <input id="username" placeholder="Enter username..." />
-        <input id="pfpUrl" placeholder="Enter PFP image URL..." />
+        <img id="pfpPreview" src="default_pfp.png">
+        <input id="username" placeholder="Enter username...">
+        <input id="pfpUrl" placeholder="Enter PFP image URL...">
         <button id="saveProfile">💾 Save</button>
         <p id="status"></p>
       </section>
 
-      <!-- Chat -->
       <section id="chat" class="tab-content">
         <h1>💬 Global Chat</h1>
         <p id="onlineCount">🟢 Online Users: 0</p>
         <div id="chatLog"></div>
         <div class="chat-box">
-          <input type="file" id="fileInput" hidden />
+          <input type="file" id="fileInput" hidden>
           <button id="uploadBtn">📎</button>
-          <input id="message" placeholder="Type message or paste media URL..." />
+          <input id="message" placeholder="Type or paste media URL...">
           <button id="sendBtn">Send</button>
         </div>
       </section>
 
-      <!-- Call -->
       <section id="call" class="tab-content">
         <h1>🎥 Shadow Call</h1>
         <div class="video-container">
@@ -66,15 +65,14 @@
   </div>
 
   <footer><p>Made by <strong>HitBoyXx23-dev</strong></p></footer>
-
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
   <script>
     const start=document.getElementById('startScreen');
-    const app=document.getElementById('mainApp');
+    const main=document.getElementById('mainApp');
     document.getElementById('enterBtn').onclick=()=>{
-      start.style.opacity='0';
-      setTimeout(()=>{start.style.display='none';app.style.display='block';},1000);
+      start.classList.add('fadeOut');
+      setTimeout(()=>{start.style.display='none';main.style.display='block';},1200);
     };
   </script>
 </body>
