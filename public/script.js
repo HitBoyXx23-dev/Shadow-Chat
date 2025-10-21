@@ -1,33 +1,23 @@
 const socket = io();
 
-// === Elements ===
-const enterScreen = document.getElementById("enter-screen");
-const appContainer = document.getElementById("app-container");
-const navButtons = document.querySelectorAll("#nav-tabs button");
-const tabs = document.querySelectorAll(".tab");
-const profileName = document.getElementById("profile-name");
-const changePfp = document.getElementById("change-pfp");
-const pfpUpload = document.getElementById("pfp-upload");
-const pfp = document.getElementById("pfp");
-const messagesDiv = document.getElementById("messages");
-const messageInput = document.getElementById("message-input");
-const sendBtn = document.getElementById("send-btn");
-const fileBtn = document.getElementById("file-btn");
-const fileInput = document.getElementById("file-input");
-const editUsername = document.getElementById("edit-username");
-const saveUsername = document.getElementById("save-username");
-
 let username = localStorage.getItem("shadow_username") || "Femboy";
-profileName.textContent = username;
 localStorage.setItem("shadow_username", username);
 
-// === Enter Screen ===
+let peerConnection;
+let localStream;
+
+document.getElementById("profile-name").textContent = username;
+
+// Enter
 document.getElementById("enter-btn").onclick = () => {
-  enterScreen.classList.add("hidden");
-  appContainer.classList.remove("hidden");
+  document.getElementById("enter-screen").classList.add("hidden");
+  document.getElementById("app-container").classList.remove("hidden");
+  socket.emit("register", username);
 };
 
-// === Tab Navigation ===
+// Tabs
+const navButtons = document.querySelectorAll("#nav-tabs button");
+const tabs = document.querySelectorAll(".tab");
 navButtons.forEach(btn => {
   btn.addEventListener("click", () => {
     navButtons.forEach(b => b.classList.remove("active"));
@@ -37,43 +27,42 @@ navButtons.forEach(btn => {
   });
 });
 
-// === Change Username ===
-saveUsername.onclick = () => {
-  const newName = editUsername.value.trim();
-  if (newName) {
-    username = newName;
-    localStorage.setItem("shadow_username", username);
-    profileName.textContent = username;
-    editUsername.value = "";
-  }
-};
-
-// === Chat ===
-socket.on("chatHistory", (history) => {
-  history.forEach(addMessage);
+// User List
+const userListEl = document.getElementById("user-list");
+socket.on("userList", (users) => {
+  userListEl.innerHTML = "";
+  users.forEach(name => {
+    if (name === username) return;
+    const li = document.createElement("li");
+    li.textContent = name;
+    li.onclick = () => startCall(name);
+    userListEl.appendChild(li);
+  });
 });
 
-sendBtn.onclick = () => {
-  const msg = messageInput.value.trim();
+// Chat
+socket.on("chatHistory", (h) => h.forEach(addMessage));
+document.getElementById("send-btn").onclick = () => {
+  const msg = document.getElementById("message-input").value.trim();
   if (!msg) return;
-  const message = { user: username, text: msg, time: Date.now() };
-  socket.emit("chatMessage", message);
-  messageInput.value = "";
+  socket.emit("chatMessage", { user: username, text: msg, time: Date.now() });
+  document.getElementById("message-input").value = "";
 };
-
 socket.on("chatMessage", addMessage);
 
 function addMessage({ user, text }) {
-  const msgDiv = document.createElement("div");
-  msgDiv.classList.add("message");
-  if (user === username) msgDiv.classList.add("self");
-  msgDiv.innerHTML = `<b>${user}:</b> ${text}`;
-  messagesDiv.appendChild(msgDiv);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  const div = document.createElement("div");
+  div.classList.add("message");
+  if (user === username) div.classList.add("self");
+  div.innerHTML = `<b>${user}:</b> ${text}`;
+  document.getElementById("messages").appendChild(div);
+  document.getElementById("messages").scrollTop =
+    document.getElementById("messages").scrollHeight;
 }
 
-// === File Upload ===
-fileBtn.onclick = () => fileInput.click();
+// File Upload
+document.getElementById("file-btn").onclick = () => fileInput.click();
+const fileInput = document.getElementById("file-input");
 fileInput.onchange = async () => {
   const file = fileInput.files[0];
   if (!file) return;
@@ -81,13 +70,18 @@ fileInput.onchange = async () => {
   formData.append("file", file);
   const res = await fetch("/upload", { method: "POST", body: formData });
   const data = await res.json();
-  const message = { user: username, text: `<img src="${data.data}" class="uploaded"/>`, time: Date.now() };
-  socket.emit("chatMessage", message);
+  socket.emit("chatMessage", {
+    user: username,
+    text: `<img src="${data.data}" class="uploaded"/>`,
+    time: Date.now(),
+  });
   fileInput.value = "";
 };
 
-// === Profile Picture ===
-changePfp.onclick = () => pfpUpload.click();
+// Profile
+const pfp = document.getElementById("pfp");
+const pfpUpload = document.getElementById("pfp-upload");
+document.getElementById("change-pfp").onclick = () => pfpUpload.click();
 pfpUpload.onchange = () => {
   const file = pfpUpload.files[0];
   if (!file) return;
@@ -100,7 +94,67 @@ pfpUpload.onchange = () => {
 };
 if (localStorage.getItem("shadow_pfp")) pfp.src = localStorage.getItem("shadow_pfp");
 
-// === Background Purple Particles ===
+document.getElementById("save-username").onclick = () => {
+  const newName = document.getElementById("edit-username").value.trim();
+  if (newName) {
+    username = newName;
+    localStorage.setItem("shadow_username", username);
+    document.getElementById("profile-name").textContent = username;
+    socket.emit("register", username);
+  }
+};
+
+// === WebRTC ===
+async function startCall(targetUser) {
+  localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  peerConnection = new RTCPeerConnection();
+  localStream.getTracks().forEach((t) => peerConnection.addTrack(t, localStream));
+  peerConnection.onicecandidate = (e) => {
+    if (e.candidate)
+      socket.emit("iceCandidate", { to: targetUser, candidate: e.candidate });
+  };
+  peerConnection.ontrack = (e) => {
+    document.getElementById("remoteVideo").srcObject = e.streams[0];
+    document.getElementById("remoteVideo").style.display = "block";
+  };
+  const offer = await peerConnection.createOffer();
+  await peerConnection.setLocalDescription(offer);
+  socket.emit("callUser", { to: targetUser, offer });
+}
+
+socket.on("incomingCall", async ({ from, offer }) => {
+  localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  peerConnection = new RTCPeerConnection();
+  localStream.getTracks().forEach((t) => peerConnection.addTrack(t, localStream));
+  peerConnection.onicecandidate = (e) => {
+    if (e.candidate)
+      socket.emit("iceCandidate", { to: from, candidate: e.candidate });
+  };
+  peerConnection.ontrack = (e) => {
+    document.getElementById("remoteVideo").srcObject = e.streams[0];
+    document.getElementById("remoteVideo").style.display = "block";
+  };
+  await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+  const answer = await peerConnection.createAnswer();
+  await peerConnection.setLocalDescription(answer);
+  socket.emit("answerCall", { to: from, answer });
+});
+
+socket.on("callAnswered", async ({ answer }) => {
+  await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+});
+socket.on("iceCandidate", ({ candidate }) => {
+  if (peerConnection)
+    peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+});
+
+// End Call
+document.getElementById("end-call-btn").onclick = () => {
+  if (peerConnection) peerConnection.close();
+  document.getElementById("remoteVideo").style.display = "none";
+};
+
+// Background Particles
 const canvas = document.getElementById("bgParticles");
 const ctx = canvas.getContext("2d");
 let particles = [];
