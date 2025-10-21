@@ -314,7 +314,7 @@ body {
     padding: 12px 18px;
     font-size: 0.9em;
   }
-}
+  
 /* === FLOATING BANNER === */
 #banner {
   position: fixed;
@@ -331,3 +331,46 @@ body {
   transition: opacity 0.4s ease;
   z-index: 9999;
 }
+  /* === CALL POPUP === */
+#call-popup {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 10000;
+}
+
+#call-popup.hidden {
+  display: none;
+}
+
+.popup-content {
+  background: rgba(30,0,60,0.9);
+  border: 2px solid #8000ff;
+  border-radius: 12px;
+  padding: 30px 50px;
+  text-align: center;
+  box-shadow: 0 0 25px #8000ff;
+}
+
+.popup-content h2 {
+  color: #d5bfff;
+  text-shadow: 0 0 15px #a020f0;
+}
+
+.popup-content button {
+  margin: 10px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: #4b0082;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.popup-content button:hover {
+  box-shadow: 0 0 15px #a020f0;
+}
+  
