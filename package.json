@@ -1,14 +1,14 @@
 {
   "name": "shadow-chat",
   "version": "1.0.0",
-  "description": "Shadow Chat — enter the shadows. Global chat with voice and media.",
+  "description": "Dark themed global chat with media, profiles, and group call",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.19.0",
-    "socket.io": "^4.7.2",
-    "multer": "^1.4.5-lts.1"
+    "express": "^4.18.2",
+    "socket.io": "^4.7.5",
+    "multer": "^1.4.5"
   }
 }
