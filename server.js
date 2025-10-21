@@ -1,5 +1,5 @@
-// Shadow Chat Server by HitBoyXx23 🔮
-// Express + Socket.io + WebRTC Signaling + Persistent JSON Chat History
+// Shadow Chat Server (Public Directory Version)
+// By HitBoyXx23 🔮
 
 const express = require("express");
 const http = require("http");
@@ -13,29 +13,29 @@ const server = http.createServer(app);
 const io = new Server(server);
 const PORT = 3000;
 
-// === Serve static frontend ===
-app.use(express.static(__dirname));
+// === Serve static files from /public ===
+const PUBLIC_DIR = path.join(__dirname, "public");
+app.use(express.static(PUBLIC_DIR));
 app.use(express.json());
 
-// === Default route (fixes "Cannot GET /") ===
+// === Default route for index.html ===
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(PUBLIC_DIR, "index.html"));
 });
 
-// === File upload (temporary memory only) ===
+// === File upload endpoint (temporary storage in memory) ===
 const upload = multer({ storage: multer.memoryStorage() });
-
 app.post("/upload", upload.single("file"), (req, res) => {
   if (!req.file) return res.status(400).send("No file uploaded");
   const base64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
   res.json({ data: base64 });
 });
 
-// === Chat History Persistence ===
+// === Persistent Chat History ===
 const CHAT_HISTORY_FILE = path.join(__dirname, "chatHistory.json");
 let chatHistory = [];
 
-// Load saved chat history
+// Load existing chat history
 if (fs.existsSync(CHAT_HISTORY_FILE)) {
   try {
     chatHistory = JSON.parse(fs.readFileSync(CHAT_HISTORY_FILE, "utf-8"));
@@ -47,21 +47,21 @@ if (fs.existsSync(CHAT_HISTORY_FILE)) {
   fs.writeFileSync(CHAT_HISTORY_FILE, "[]");
 }
 
-// === Socket.io for Chat & WebRTC ===
+// === Socket.io for real-time chat + WebRTC signaling ===
 io.on("connection", (socket) => {
   console.log("🟣 User connected:", socket.id);
 
   // Send saved chat to new client
   socket.emit("chatHistory", chatHistory);
 
-  // New chat message
+  // Receive new message and broadcast it
   socket.on("chatMessage", (msg) => {
     chatHistory.push(msg);
     fs.writeFileSync(CHAT_HISTORY_FILE, JSON.stringify(chatHistory, null, 2));
     io.emit("chatMessage", msg);
   });
 
-  // WebRTC Signaling
+  // Handle WebRTC offer/answer/candidate for voice calls
   socket.on("offer", (data) => socket.broadcast.emit("offer", data));
   socket.on("answer", (data) => socket.broadcast.emit("answer", data));
   socket.on("candidate", (data) => socket.broadcast.emit("candidate", data));
