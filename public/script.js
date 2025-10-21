@@ -54,17 +54,35 @@ function addMsg({user,pfp,text}){
 }
 
 // === File Upload ===
-const fileInput=document.getElementById("file-input");
-document.getElementById("file-btn").onclick=()=>fileInput.click();
-fileInput.onchange=async()=>{
-  const file=fileInput.files[0]; if(!file)return;
-  const formData=new FormData(); formData.append("file",file);
-  const res=await fetch("/upload",{method:"POST",body:formData});
-  const data=await res.json();
-  const msg={user:username,pfp,text:`<img src="${data.data}" style="max-width:250px;border-radius:6px;">`,time:Date.now()};
-  socket.emit("chatMessage",msg);
-  fileInput.value="";
+const fileInput = document.getElementById("file-input");
+document.getElementById("file-btn").onclick = () => fileInput.click();
+
+fileInput.onchange = async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch("/upload", { method: "POST", body: formData });
+  const data = await res.json();
+
+  let html = "";
+  if (file.type.startsWith("video/")) {
+    html = `<video src="${data.data}" controls style="max-width:300px;border-radius:8px;"></video>`;
+  } else if (file.type.startsWith("audio/")) {
+    html = `<audio src="${data.data}" controls style="width:250px;"></audio>`;
+  } else if (file.type.startsWith("image/")) {
+    html = `<img src="${data.data}" style="max-width:250px;border-radius:6px;">`;
+  } else {
+    html = `<a href="${data.data}" download="${file.name}" style="color:#a020f0;">${file.name}</a>`;
+  }
+
+  const msg = { user: username, pfp, text: html, time: Date.now() };
+  socket.emit("chatMessage", msg);
+  fileInput.value = "";
 };
+
 
 // === Profile ===
 const pfpEl=document.getElementById("pfp");
