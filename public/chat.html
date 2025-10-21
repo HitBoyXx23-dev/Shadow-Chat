@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Shadow Chat — Chat</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>💬 Shadow Chat</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <canvas id="fireworkCanvas"></canvas>
@@ -15,21 +15,20 @@
     <a href="call.html">🎥 Call</a>
   </div>
 
-  <div class="container">
+  <div class="container chat-container">
     <h1>💬 Global Chatroom</h1>
     <p id="onlineCount">🟢 Online Users: 0</p>
     <div id="chatLog"></div>
 
     <div class="chat-box">
-      <input type="file" id="fileInput" hidden>
+      <input type="file" id="fileInput" hidden />
       <button id="uploadBtn">📎</button>
-      <input id="message" placeholder="Type or paste media URL...">
+      <input id="message" placeholder="Type message or paste media URL..." />
       <button id="sendBtn">Send</button>
     </div>
   </div>
 
   <footer><p>Made by <strong>HitBoyXx23-dev</strong></p></footer>
-
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>
