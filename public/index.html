@@ -3,89 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>🕶️ Shadow Chat</title>
+  <title>Shadow Chat — Profile</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <canvas id="fireworkCanvas"></canvas>
 
-  <!-- INTRO / START SCREEN -->
+  <!-- Intro Screen -->
   <div id="startScreen">
     <div class="intro-box">
       <h1 class="intro-title">🕶️ Welcome to <span>Shadow Chat</span></h1>
-      <p class="intro-sub">Step into the void and connect through the shadows.</p>
+      <p class="intro-sub">Your identity in the shadows begins here.</p>
       <button id="enterBtn">Enter the Shadows</button>
     </div>
   </div>
 
-  <!-- MAIN APP -->
+  <!-- Main App -->
   <div id="mainApp" style="display:none;">
     <header>🕶️ Shadow Chat</header>
 
-    <!-- TAB BUTTONS -->
-    <div class="tabs">
-      <button class="tab active" data-tab="profile">Profile</button>
-      <button class="tab" data-tab="chat">Chat</button>
-      <button class="tab" data-tab="call">Call</button>
+    <div class="nav-links">
+      <a href="chat.html">💬 Chat</a>
+      <a href="call.html">🎥 Call</a>
     </div>
 
-    <!-- TAB CONTENTS -->
     <div class="container">
-      
-      <!-- PROFILE TAB -->
-      <section id="profile" class="tab-content active">
+      <section id="profile">
         <h1>🕶️ Shadow Profile</h1>
-        <p>Your info is stored locally (on this device)</p>
+        <p>Your profile data is stored locally.</p>
         <img id="pfpPreview" src="default_pfp.png" alt="Profile Picture">
-        <input type="text" id="username" placeholder="Enter your username...">
-        <input type="text" id="pfpUrl" placeholder="Profile picture URL...">
+        <input id="username" placeholder="Enter username...">
+        <input id="pfpUrl" placeholder="Enter profile picture URL...">
         <button id="saveProfile">💾 Save</button>
         <p id="status"></p>
       </section>
-
-      <!-- CHAT TAB -->
-      <section id="chat" class="tab-content">
-        <h1>💬 Global Chat</h1>
-        <p id="onlineCount">🟢 Online Users: 0</p>
-        <div id="chatLog"></div>
-
-        <div class="chat-box">
-          <input type="file" id="fileInput" hidden>
-          <button id="uploadBtn">📎</button>
-          <input type="text" id="message" placeholder="Type message or paste media URL...">
-          <button id="sendBtn">Send</button>
-        </div>
-      </section>
-
-      <!-- CALL TAB -->
-      <section id="call" class="tab-content">
-        <h1>🎥 Shadow Call</h1>
-        <div class="video-container">
-          <video id="localVideo" autoplay muted></video>
-          <video id="remoteVideo" autoplay></video>
-        </div>
-        <div class="call-buttons">
-          <button id="startCall">Join Call</button>
-          <button id="endCall">End Call</button>
-        </div>
-      </section>
-
     </div>
   </div>
 
-  <footer>
-    <p>Made by <strong>HitBoyXx23-dev</strong></p>
-  </footer>
+  <footer><p>Made by <strong>HitBoyXx23-dev</strong></p></footer>
 
-  <!-- Scripts -->
-  <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
   <script>
     const start=document.getElementById('startScreen');
     const main=document.getElementById('mainApp');
     document.getElementById('enterBtn').onclick=()=>{
       start.classList.add('fadeOut');
-      setTimeout(()=>{start.style.display='none';main.style.display='block';},1200);
+      setTimeout(()=>{start.style.display='none';main.style.display='block';},1000);
     };
   </script>
 </body>
