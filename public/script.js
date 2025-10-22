@@ -151,7 +151,9 @@ document.getElementById("save-username").onclick = () => {
 
 // === GROUP CALL ===
 async function createPeerConnection(id) {
-  const pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection({
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  });
   peers[id] = pc;
 
   localStream?.getTracks().forEach((track) => pc.addTrack(track, localStream));
@@ -168,10 +170,7 @@ async function createPeerConnection(id) {
       v.style.borderRadius = "10px";
       document.getElementById("remote-videos").appendChild(v);
       stream.getTracks().forEach(
-        (t) =>
-          (t.onended = () => {
-            if (v.srcObject === stream) v.remove();
-          })
+        (t) => (t.onended = () => v.remove())
       );
     } else {
       const a = new Audio();
@@ -216,21 +215,30 @@ document.getElementById("muteMic").onclick = () => {
   showBanner(isMuted ? "🎙️ Mic muted" : "🎤 Mic unmuted", "#8000ff");
 };
 
-// === Screen share ===
+// === SCREEN SHARE (FIXED) ===
 const shareBtn = document.getElementById("shareScreen");
+
 shareBtn.onclick = async () => {
   if (isSharing) return stopScreenShare();
-
   try {
     screenStream = await navigator.mediaDevices.getDisplayMedia({
       video: true,
-      audio: true,
+      audio: false,
     });
     isSharing = true;
     showBanner("🖥️ Started screen share", "#a020f0");
 
-    for (const id in peers)
-      screenStream.getTracks().forEach((track) => peers[id].addTrack(track));
+    for (const id in peers) {
+      const sender = peers[id]
+        .getSenders()
+        .find((s) => s.track && s.track.kind === "video");
+      if (sender)
+        sender.replaceTrack(screenStream.getVideoTracks()[0]);
+      else
+        screenStream.getTracks().forEach((track) =>
+          peers[id].addTrack(track, screenStream)
+        );
+    }
 
     const preview = document.getElementById("screen-preview");
     preview.innerHTML = "";
@@ -244,9 +252,10 @@ shareBtn.onclick = async () => {
     video.style.borderRadius = "10px";
     preview.appendChild(video);
 
-    screenStream.getTracks().forEach((track) => (track.onended = stopScreenShare));
+    screenStream.getTracks().forEach((t) => (t.onended = stopScreenShare));
     shareBtn.textContent = "🛑 Stop Sharing";
-  } catch {
+  } catch (err) {
+    console.error(err);
     showBanner("❌ Screen share cancelled", "crimson");
   }
 };
@@ -256,6 +265,13 @@ function stopScreenShare() {
   screenStream.getTracks().forEach((t) => t.stop());
   screenStream = null;
   isSharing = false;
+  for (const id in peers) {
+    const sender = peers[id]
+      .getSenders()
+      .find((s) => s.track && s.track.kind === "video");
+    if (sender && localStream?.getVideoTracks().length)
+      sender.replaceTrack(localStream.getVideoTracks()[0]);
+  }
   document.getElementById("screen-preview").innerHTML = "";
   shareBtn.textContent = "🖥️ Share Screen";
   showBanner("🛑 Stopped screen share", "#4b0082");
@@ -267,7 +283,7 @@ async function startPrivateCall(targetName) {
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     privateTarget = targetName;
-    privatePC = new RTCPeerConnection();
+    privatePC = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
     localStream.getTracks().forEach((t) => privatePC.addTrack(t, localStream));
 
     privatePC.ontrack = (e) => {
@@ -302,7 +318,7 @@ async function startPrivateCall(targetName) {
   }
 }
 
-// === Incoming call ===
+// === INCOMING PRIVATE CALL ===
 socket.on("privateOffer", async ({ offer, from }) => {
   const popup = document.getElementById("call-popup");
   const callerName = document.getElementById("caller-name");
@@ -313,7 +329,7 @@ socket.on("privateOffer", async ({ offer, from }) => {
     popup.classList.add("hidden");
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     privateTarget = from;
-    privatePC = new RTCPeerConnection();
+    privatePC = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
     localStream.getTracks().forEach((t) => privatePC.addTrack(t, localStream));
     privatePC.ontrack = (e) => {
       const a = new Audio();
@@ -359,13 +375,11 @@ document.getElementById("mutePrivate").onclick = () => {
   showBanner(privateMuted ? "🎙️ Mic muted" : "🎤 Mic unmuted", "#a020f0");
 };
 
+// === PRIVATE SCREEN SHARE ===
 document.getElementById("sharePrivate").onclick = async () => {
   if (privateSharing) return stopPrivateShare();
   try {
-    privateScreen = await navigator.mediaDevices.getDisplayMedia({
-      video: true,
-      audio: true,
-    });
+    privateScreen = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
     privateSharing = true;
     privateScreen
       .getTracks()
