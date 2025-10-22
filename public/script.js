@@ -1,3 +1,4 @@
+// === SOCKET SETUP ===
 const socket = io();
 let username = localStorage.getItem("shadow_username") || "Femboy";
 let pfp = localStorage.getItem("shadow_pfp") || "default_pfp.png";
@@ -53,9 +54,7 @@ document.querySelectorAll("#nav-tabs button").forEach((btn) => {
       .querySelectorAll(".tab")
       .forEach((t) => t.classList.remove("active"));
     btn.classList.add("active");
-    document
-      .getElementById(`${btn.dataset.tab}-tab`)
-      .classList.add("active");
+    document.getElementById(`${btn.dataset.tab}-tab`).classList.add("active");
   });
 });
 
@@ -282,12 +281,6 @@ async function startPrivateCall(targetName) {
         v.style.border = "2px solid #8000ff";
         v.style.borderRadius = "10px";
         document.getElementById("private-remote").appendChild(v);
-        stream.getTracks().forEach(
-          (t) =>
-            (t.onended = () => {
-              if (v.srcObject === stream) v.remove();
-            })
-        );
       } else {
         const a = new Audio();
         a.srcObject = stream;
@@ -322,25 +315,11 @@ socket.on("privateOffer", async ({ offer, from }) => {
     privateTarget = from;
     privatePC = new RTCPeerConnection();
     localStream.getTracks().forEach((t) => privatePC.addTrack(t, localStream));
-
     privatePC.ontrack = (e) => {
-      const stream = e.streams[0];
-      if (stream.getVideoTracks().length) {
-        const v = document.createElement("video");
-        v.srcObject = stream;
-        v.autoplay = true;
-        v.playsInline = true;
-        v.style.width = "80%";
-        v.style.border = "2px solid #8000ff";
-        v.style.borderRadius = "10px";
-        document.getElementById("private-remote").appendChild(v);
-      } else {
-        const a = new Audio();
-        a.srcObject = stream;
-        a.autoplay = true;
-      }
+      const a = new Audio();
+      a.srcObject = e.streams[0];
+      a.autoplay = true;
     };
-
     privatePC.onicecandidate = (e) => {
       if (e.candidate)
         socket.emit("privateCandidate", { candidate: e.candidate, to: from });
@@ -366,8 +345,7 @@ socket.on("privateAnswer", async ({ answer }) => {
 });
 
 socket.on("privateCandidate", async ({ candidate }) => {
-  if (privatePC)
-    await privatePC.addIceCandidate(new RTCIceCandidate(candidate));
+  if (privatePC) await privatePC.addIceCandidate(new RTCIceCandidate(candidate));
 });
 
 // === PRIVATE CONTROLS ===
@@ -473,8 +451,9 @@ messageInput.addEventListener("focus", () => {
 });
 
 // === PARTICLE BACKGROUND ===
-const c = document.getElementById("bgParticles"),
-  ctx = c.getContext("2d");
+const c = document.getElementById("bgParticles");
+const ctx = c.getContext("2d");
+
 function resize() {
   c.width = innerWidth;
   c.height = innerHeight;
@@ -483,11 +462,6 @@ resize();
 window.onresize = resize;
 
 let parts = [];
-function add() {
-  parts.push({
-    x: Math.randomOops — the end of that script got cut off. Here’s the **rest of the file (the particle animation section)** to complete your `script.js`:  
-
-```js
 function add() {
   parts.push({
     x: Math.random() * c.width,
@@ -500,15 +474,16 @@ function add() {
 
 function loop() {
   ctx.clearRect(0, 0, c.width, c.height);
-  parts.forEach((p, i) => {
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const p = parts[i];
     p.y += p.v;
     p.l--;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, p.s, 0, 6.28);
+    ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2);
     ctx.fillStyle = `rgba(128,0,255,${Math.random() * 0.5})`;
     ctx.fill();
     if (p.l <= 0 || p.y > c.height) parts.splice(i, 1);
-  });
+  }
   requestAnimationFrame(loop);
 }
 
